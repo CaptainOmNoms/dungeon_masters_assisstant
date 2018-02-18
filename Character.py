@@ -17,7 +17,3 @@ class Character():
 
     def heal(self, potion):
         self.health += potion
-
-
-
-
