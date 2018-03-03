@@ -1,4 +1,4 @@
-from Character import Character
+from .character import Character
 
 
 class Monster(Character):
@@ -14,4 +14,4 @@ class Monster(Character):
         self.alive = True
 
 
-#TODO create lookup function
+# TODO create lookup function

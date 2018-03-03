@@ -1,4 +1,4 @@
-from Character import Character
+from .character import Character
 
 
 class Hero(Character):

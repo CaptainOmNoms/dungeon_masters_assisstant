@@ -1,6 +1,6 @@
-from Character import Character
-from Monster import Monster
-from Hero import Hero
+from .character import Character
+from .monster import Monster
+from .hero import Hero
 
 
 class Encounter(object):
