@@ -1,3 +1,4 @@
+from cmd2 import Cmd
 from .encounter import *
 
 
@@ -57,3 +58,12 @@ while loop:
         loop = False
     else:
         input('Invalid option. Press ENTER to return to the menu')
+
+
+class App(Cmd):
+    def do_hello(self, arg):
+        print('Hello world')
+
+if __name__ == '__main__':
+    App().cmdloop()
+
