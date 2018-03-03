@@ -1,7 +1,14 @@
+from marshmallow_sqlalchemy import ModelSchema
 from .character import Character
+from .models import Monster
 
 
-class Monster(Character):
+class MonsterSchema(ModelSchema):
+    class Meta:
+        model = Monster
+
+
+class MonsterOld(Character):
     """
     Any NPC
     """

@@ -1,5 +1,4 @@
 class Dice(object):
-
     def __init__(self, sides, number):
         self.sides = sides
         self.number = number
