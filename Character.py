@@ -1,4 +1,4 @@
-class Character():
+class Character(object):
     """Any PC or NPC in an encounter"""
 
     def __init__(self, name, health, ac, initiative, speed):
