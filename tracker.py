@@ -1,6 +1,7 @@
 from cmd2 import Cmd
 from .encounter import *
-
+from .dice import *
+from operator import attrgetter
 
 def main_menu():
     print("""
@@ -10,9 +11,8 @@ def main_menu():
     4. Run Encounter
     5. Exit""")
 
-
 #def add_monster():
-#TODO: loopup to table function or custom
+#TODO: lookup to table function or custom
 
 ENC = Encounter()
 
@@ -51,8 +51,8 @@ class App(Cmd):
 
 
     def do_print_encounter(self, arg):
-        for key, item in monsters.items():
-            print("{}, {}, {}, {}, {}".format)
+        for key, item in ENC.creatures.items():
+            item.print()
 
     def do_add_pc(self, arg):
         name = input("Name: ")
@@ -62,6 +62,23 @@ class App(Cmd):
         speed = input("Speed: ")
         player = input("Played By: ")
         ENC.add_player(name, health, ac, initiative, speed, player)
+
+    def do_set_initiatives(self):
+        die = Dice(1, 20)
+        for key, item in ENC.creatures.items():
+            roll = 0
+            while not roll:
+                roll = die.check_roll(input("Enter initiative roll for {0}: ".format(key)))
+            item.initiative = roll + item.initiative_bonus
+        ENC.creatures = sorted(ENC.creatures, key=attrgetter('initiative_bonus', 'initiative'), reverse=True)
+
+    def do_heal(self, creature, health_up): # too many different ways to heal to do dice validation here
+        if health_up > 0:
+            ENC.creatures[creature].heal(health_up)
+
+    def do_damage(self, creature, health_down): # too many different ways to damage to do dice validation here
+        if health_down > 0:
+            ENC.creatures[creature].heal(health_down)
 
 
 if __name__ == '__main__':

@@ -15,3 +15,4 @@ class Monster(Character):
 
 
 # TODO create lookup function
+# TODO database

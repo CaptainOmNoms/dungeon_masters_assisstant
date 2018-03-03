@@ -15,5 +15,9 @@ class Character(object):
             self.health = 0
             self.alive = False
 
-    def heal(self, potion):
-        self.health += potion
+    def heal(self, heal):
+        self.health += heal
+
+    def print(self):
+        print("{0}, Health: {1} Initiative: {2} AC: {3} Speed: {4}".format(self.name, self.health, self.initiative, self.ac, self.speed))
+        # TODO add attacks print out
