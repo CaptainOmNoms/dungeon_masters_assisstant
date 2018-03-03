@@ -1,4 +1,13 @@
-class Character(object):
+from marshmallow_sqlalchemy import ModelSchema
+from .models import Character
+
+
+class CharacterSchema(ModelSchema):
+    class Meta:
+        model = Character
+
+
+class CharacterOld(object):
     """Any PC or NPC in an encounter"""
 
     def __init__(self, name, health, ac, initiative, speed):

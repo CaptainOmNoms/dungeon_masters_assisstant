@@ -3,16 +3,7 @@ from .encounter import *
 from .dice import *
 from operator import attrgetter
 
-def main_menu():
-    print("""
-    1. Add Monster
-    2. Add NPC Hero
-    3. Add PC
-    4. Run Encounter
-    5. Exit""")
-
-#def add_monster():
-#TODO: lookup to table function or custom
+# TODO: lookup to table function or custom
 
 ENC = Encounter()
 
@@ -34,7 +25,6 @@ def add_pc():
     speed = input("Speed: ")
     player = input("Played By: ")
     ENC.add_player(name, health, ac, initiative, speed, player)
-
 
 
 class App(Cmd):

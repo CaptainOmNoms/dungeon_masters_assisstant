@@ -1,9 +1,16 @@
+from marshmallow_sqlalchemy import ModelSchema
 from .character import Character
 from .monster import Monster
 from .hero import Hero
+from .models import Encounter
 
 
-class Encounter(object):
+class EncounterSchema(ModelSchema):
+    class Meta:
+        model = Encounter
+
+
+class EncounterOld(object):
     def __init__(self):
         self.creatures = {}
 
