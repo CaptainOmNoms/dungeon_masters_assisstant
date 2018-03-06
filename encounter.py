@@ -1,8 +1,5 @@
 from marshmallow_sqlalchemy import ModelSchema
-from .character import Character
-from .monster import Monster
-from .hero import Hero
-from .models import Encounter
+from .models import Encounter, Character, Monster, Hero
 
 
 class EncounterSchema(ModelSchema):

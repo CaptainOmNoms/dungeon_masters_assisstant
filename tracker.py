@@ -1,7 +1,7 @@
 from cmd2 import Cmd
-from .encounter import *
-from .dice import *
+from .dice import Dice
 from operator import attrgetter
+from .models import Encounter
 
 # TODO: lookup to table function or custom
 
@@ -32,26 +32,14 @@ class App(Cmd):
         print('Hello world')
 
     def do_add_npc(self, arg):
-        name = input("Name: ")
-        health = input("Health: ")
-        ac = input("Armor Class: ")
-        initiative = input("Initiative: ")
-        speed = input("Speed: ")
-        ENC.add_npc(name, health, ac, initiative, speed)
-
+        add_npc()
 
     def do_print_encounter(self, arg):
         for key, item in ENC.creatures.items():
             item.print()
 
     def do_add_pc(self, arg):
-        name = input("Name: ")
-        health = input("Health: ")
-        ac = input("Armor Class: ")
-        initiative = input("Initiative: ")
-        speed = input("Speed: ")
-        player = input("Played By: ")
-        ENC.add_player(name, health, ac, initiative, speed, player)
+        add_pc()
 
     def do_set_initiatives(self):
         die = Dice(1, 20)

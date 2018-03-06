@@ -1,6 +1,5 @@
 from marshmallow_sqlalchemy import ModelSchema
-from .character import Character
-from .models import Monster
+from .models import Monster, Character
 
 
 class MonsterSchema(ModelSchema):
