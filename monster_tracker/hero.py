@@ -1,5 +1,5 @@
 from marshmallow_sqlalchemy import ModelSchema
-from monster_tracker.character import CharacterOld
+from monster_tracker.character import CharacterOld, Status
 from monster_tracker.models import Hero
 from monster_tracker.dice import Dice
 
@@ -30,21 +30,21 @@ class HeroOld(CharacterOld):
             if self.death_saves['failed'] == 3:
                 self.death_saves['saves'] = 0
                 self.death_saves['failed'] = 0
-                self.status = 'dead'
+                self.status = Status.DEAD
         elif roll < 10:  # rolled 2-9
             self.death_saves['failed'] += 1
             if self.death_saves['failed'] == 3:
                 self.death_saves['saves'] = 0
                 self.death_saves['failed'] = 0
-                self.status = 'dead'
+                self.status = Status.DEAD
         elif roll < 20:  # rolled 11-19
             self.death_saves['saved'] += 1
             if self.death_saves['saved'] == 3:
                 self.death_saves['saves'] = 0
                 self.death_saves['failed'] = 0
-                self.status = 'stable'
+                self.status = Status.STABLE
         else:  # rolled a nat 20
             self.health = 1
             self.death_saves['saves'] = 0
             self.death_saves['failed'] = 0
-            self.status = 'alive'
+            self.status = Status.ALIVE

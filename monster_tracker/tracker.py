@@ -61,29 +61,19 @@ class App(Cmd):
 
         # TODO figure out what's going on here. Dicts are inherently unsorted so this does literally nothing
         # since self.enc.creatures is a dict
-        self.enc.creatures = sorted(
-            self.enc.creatures,
+        sorted(self.enc.creatures,
             key=attrgetter('initiative_bonus', 'initiative'),
             reverse=True)
 
-    def do_heal(
-            self, creature, health_up
-    ):  # too many different ways to heal to do dice validation here
+    def do_heal(self, creature, health_up):
         if health_up > 0:
             self.enc.creatures[creature].heal(health_up)
 
-    def do_damage(
-            self, creature, health_down
-    ):  # too many different ways to damage to do dice validation here
-        # TODO: make generic actors
-        if health_down > 0:
-            self.enc.creatures[creature].heal(health_down)
+    def do_damage(self, done_by, done_to, damage, type):
+        self.deal_damage(done_by, done_to, damage, type)
 
-    def do_next(self, id):
-        self.current_player = self.enc.creatures[id]
-        if self.current_player.status == Status.DEAD:
-            if isinstance(self.current_player, MonsterOld):
-                self.enc.total_xp += self.current_player.xp
+    def do_next(self, num):
+        self.current_player = self.enc.creatures[num]
         if self.current_player.status == Status.ALIVE:
             self.current_player.do_turn()
         if self.current_player.status == Status.UNCONSCIOUS:
@@ -96,6 +86,8 @@ class App(Cmd):
             self.do_set_initiatives()
             self.do_next(turn)
             turn += 1
+            if len(self.creatures) == turn:
+                turn = 0
 
     def do_load_from_cfg(self, arg):
         pass
