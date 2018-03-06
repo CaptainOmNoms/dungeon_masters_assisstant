@@ -3,7 +3,6 @@ from monster_tracker.character import CharacterOld
 from monster_tracker.models import Hero
 from monster_tracker.dice import Dice
 
-
 #class HeroSchema(ModelSchema):
 #    class Meta:
 #        model = Hero
@@ -12,7 +11,7 @@ from monster_tracker.dice import Dice
 class HeroOld(CharacterOld):
     def __init__(self, name, health, ac, initiative_bonus, speed, player):
         super().__init__(name, health, ac, initiative_bonus, 0, speed)
-        self.death_saves = {'failed' : 0, 'saved' : 0}
+        self.death_saves = {'failed': 0, 'saved': 0}
         if player != '':
             self.player = player
         else:
@@ -22,7 +21,10 @@ class HeroOld(CharacterOld):
         die = Dice(1, 20)
         roll = 0
         while not roll:
-            roll = die.check_roll(int(input("Enter death save roll for {0}: ".format(self.name))))
+            roll = die.check_roll(
+                int(
+                    input("Enter death save roll for {0}: ".format(
+                        self.name))))
         if roll == 1:  # roll a nat 1
             self.death_saves['failed'] += 2
             if self.death_saves['failed'] == 3:

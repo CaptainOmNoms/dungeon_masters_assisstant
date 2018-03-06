@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import IntEnum
 from marshmallow_sqlalchemy import ModelSchema
 from monster_tracker.models import Character
-
 
 #class CharacterSchema(ModelSchema):
 #    class Meta:
 #        model = Character
+Status = IntEnum('Status', 'DEAD ALIVE UNCONSCIOUS')
 
 
 class CharacterOld(object):
@@ -18,7 +18,7 @@ class CharacterOld(object):
         self.initiative_bonus = initiative_bonus
         self.initiative = initiative
         self.speed = speed
-        self.status = 'alive' # convert to enum
+        self.status = Status.ALIVE
         self.moved = False
 
     def damage(self, damage):
@@ -31,12 +31,12 @@ class CharacterOld(object):
 
     #def print(self):
     #    print("{0}, Health: {1} Initiative: {2} AC: {3} Speed: {4}".format(self.name, self.health, self.initiative, self.ac, self.speed))
-        # TODO add attacks print out
-        # TODO repr
+    # TODO add attacks print out
+    # TODO repr
 
     def __repr__(self):
-        return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(self.name, self.health, self.initiative,
-                self.ac, self.speed)
+        return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
+            self.name, self.health, self.initiative, self.ac, self.speed)
 
     def do_action(self):
         pass
@@ -48,8 +48,7 @@ class CharacterOld(object):
         self.moved = True
 
     def begin_turn(self):
-        raise NotImplemented('No turn for generic character')
-
+        raise NotImplementedError('No turn for generic character')
 
     def death(self):
-        raise NotImplemented('No death for generic character')
+        raise NotImplementedError('No death for generic character')

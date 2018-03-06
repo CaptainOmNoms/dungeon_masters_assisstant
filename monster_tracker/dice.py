@@ -2,6 +2,7 @@ class Dice(object):
     """
     Helps validate dice rolls
     """
+
     def __init__(self, number, sides):
         self.number = number
         self.sides = sides

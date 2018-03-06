@@ -15,7 +15,6 @@ class EncounterOld(object):
         self.total_xp = 0
         self.current_player = Character()
 
-
     def add_player(self, name, health, ac, initiative_bonus, speed, played_by):
         player = HeroOld(name, health, ac, initiative_bonus, speed, played_by)
         self.creatures[name] = player

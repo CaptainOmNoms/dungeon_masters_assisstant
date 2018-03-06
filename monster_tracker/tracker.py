@@ -1,8 +1,10 @@
-from cmd2 import Cmd
 from operator import attrgetter
+from cmd2 import Cmd
 from monster_tracker.dice import Dice
 #from monster_tracker.models import Encounter, Monster, Hero
 from monster_tracker.encounter import EncounterOld
+from monster_tracker.character import Status
+from monster_tracker.monster import MonsterOld
 
 # TODO: lookup to table function or custom
 
@@ -53,30 +55,38 @@ class App(Cmd):
         for key, item in self.enc.creatures.items():
             roll = 0
             while not roll:
-                roll = die.check_roll(input("Enter initiative roll for {0}: ".format(key)))
+                roll = die.check_roll(
+                    input("Enter initiative roll for {0}: ".format(key)))
             item.initiative = roll + item.initiative_bonus
 
         # TODO figure out what's going on here. Dicts are inherently unsorted so this does literally nothing
         # since self.enc.creatures is a dict
-        self.enc.creatures = sorted(self.enc.creatures, key=attrgetter('initiative_bonus', 'initiative'), reverse=True)
+        self.enc.creatures = sorted(
+            self.enc.creatures,
+            key=attrgetter('initiative_bonus', 'initiative'),
+            reverse=True)
 
-    def do_heal(self, creature, health_up): # too many different ways to heal to do dice validation here
+    def do_heal(
+            self, creature, health_up
+    ):  # too many different ways to heal to do dice validation here
         if health_up > 0:
             self.enc.creatures[creature].heal(health_up)
 
-    def do_damage(self, creature, health_down): # too many different ways to damage to do dice validation here
+    def do_damage(
+            self, creature, health_down
+    ):  # too many different ways to damage to do dice validation here
         # TODO: make generic actors
         if health_down > 0:
             self.enc.creatures[creature].heal(health_down)
 
     def do_next(self, id):
         self.current_player = self.enc.creatures[id]
-        if self.current_player.status == 'dead':
+        if self.current_player.status == Status.DEAD:
             if isinstance(self.current_player, MonsterOld):
                 self.enc.total_xp += self.current_player.xp
-        if self.current_player.status == 'alive':
+        if self.current_player.status == Status.ALIVE:
             self.current_player.do_turn()
-        if self.current_player.status == 'unconscious':
+        if self.current_player.status == Status.UNCONSCIOUS:
             self.current_player.dead()
 
     def do_encounter(self):
@@ -89,8 +99,6 @@ class App(Cmd):
 
     def do_load_from_cfg(self, arg):
         pass
-
-
 
 
 if __name__ == '__main__':

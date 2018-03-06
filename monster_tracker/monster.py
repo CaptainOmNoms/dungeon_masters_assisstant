@@ -2,7 +2,6 @@ from marshmallow_sqlalchemy import ModelSchema
 from monster_tracker.models import Monster, Character
 from monster_tracker.character import CharacterOld
 
-
 #class MonsterSchema(ModelSchema):
 #    class Meta:
 #        model = Monster
