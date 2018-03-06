@@ -21,8 +21,6 @@ class MonsterOld(Character):
         self.alive = True
 
 
-
-
 # TODO create lookup function
 # TODO database
 

@@ -71,17 +71,27 @@ class App(Cmd):
         if health_down > 0:
             ENC.creatures[creature].heal(health_down)
 
-    def do_next(self):
-        pass
-        # changes self.current_player to next in order
-        if self.current_creature.status != 'dead':
-            # this allows us to keep them on screen and in the initiative
-            # which will help for when we have a GUI
-            # prints stats for current player
-            # self.current_player.begin_turn()
+    def do_next(self, id):
+        self.current_player = self.creatures[id]
+        if self.current_player.status == 'dead':
+            if self.current_player.isinstance(Monster):
+                self.total_xp += self.current_player.xp
+        if self.current_player.status == 'alive':
+            self.current_player.do_turn()
+        if self.current_player.status == 'unconscious':
+            self.current_player.dead()
 
     def do_encounter(self):
-        pass
+        ENC = Encounter()
+        turn = 0
+        while True:
+            ENC.do_print_encounter()
+            ENC.do_set_initiatives()
+            ENC.do_next(turn)
+            turn += 1
+
+
+
 
 
 if __name__ == '__main__':

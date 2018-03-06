@@ -1,5 +1,6 @@
 from marshmallow_sqlalchemy import ModelSchema
 from .models import Character
+from enum import Enum
 
 
 class CharacterSchema(ModelSchema):
@@ -43,9 +44,7 @@ class CharacterOld(object):
         self.moved = True
 
     def begin_turn(self):
-        pass
-        if self.status == 'unconscious':
-            self.dead()
+        raise NotImplemented('No turn for generic character')
 
 
     def death(self):
