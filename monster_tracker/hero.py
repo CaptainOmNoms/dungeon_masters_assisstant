@@ -1,15 +1,15 @@
 from marshmallow_sqlalchemy import ModelSchema
-from .character import Character
-from .models import Hero
-from .dice import Dice
+from monster_tracker.character import CharacterOld
+from monster_tracker.models import Hero
+from monster_tracker.dice import Dice
 
 
-class HeroSchema(ModelSchema):
-    class Meta:
-        model = Hero
+#class HeroSchema(ModelSchema):
+#    class Meta:
+#        model = Hero
 
 
-class HeroOld(Character):
+class HeroOld(CharacterOld):
     def __init__(self, name, health, ac, initiative_bonus, speed, player):
         super().__init__(name, health, ac, initiative_bonus, 0, speed)
         self.death_saves = {'failed' : 0, 'saved' : 0}

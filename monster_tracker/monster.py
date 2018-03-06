@@ -1,13 +1,14 @@
 from marshmallow_sqlalchemy import ModelSchema
-from .models import Monster, Character
+from monster_tracker.models import Monster, Character
+from monster_tracker.character import CharacterOld
 
 
-class MonsterSchema(ModelSchema):
-    class Meta:
-        model = Monster
+#class MonsterSchema(ModelSchema):
+#    class Meta:
+#        model = Monster
 
 
-class MonsterOld(Character):
+class MonsterOld(CharacterOld):
     """
     Any NPC
     """
@@ -22,6 +23,3 @@ class MonsterOld(Character):
 
 # TODO create lookup function
 # TODO database
-
-
-

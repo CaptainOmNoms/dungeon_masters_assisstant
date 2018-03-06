@@ -1,11 +1,11 @@
-from marshmallow_sqlalchemy import ModelSchema
-from .models import Character
 from enum import Enum
+from marshmallow_sqlalchemy import ModelSchema
+from monster_tracker.models import Character
 
 
-class CharacterSchema(ModelSchema):
-    class Meta:
-        model = Character
+#class CharacterSchema(ModelSchema):
+#    class Meta:
+#        model = Character
 
 
 class CharacterOld(object):
@@ -29,10 +29,14 @@ class CharacterOld(object):
     def heal(self, heal):
         self.health += heal
 
-    def print(self):
-        print("{0}, Health: {1} Initiative: {2} AC: {3} Speed: {4}".format(self.name, self.health, self.initiative, self.ac, self.speed))
+    #def print(self):
+    #    print("{0}, Health: {1} Initiative: {2} AC: {3} Speed: {4}".format(self.name, self.health, self.initiative, self.ac, self.speed))
         # TODO add attacks print out
         # TODO repr
+
+    def __repr__(self):
+        return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(self.name, self.health, self.initiative,
+                self.ac, self.speed)
 
     def do_action(self):
         pass
