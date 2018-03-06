@@ -12,19 +12,19 @@ def add_npc():
     name = input("Name: ")
     health = input("Health: ")
     ac = input("Armor Class: ")
-    initiative = input("Initiative: ")
+    initiative_bonus = input("Initiative Bonus: ")
     speed = input("Speed: ")
-    ENC.add_npc(name, health, ac, initiative, speed)
+    ENC.add_npc(name, health, ac, initiative_bonus, speed)
 
 
 def add_pc():
     name = input("Name: ")
     health = input("Health: ")
     ac = input("Armor Class: ")
-    initiative = input("Initiative: ")
+    initiative_bonus = input("Initiative Bonus: ")
     speed = input("Speed: ")
     player = input("Played By: ")
-    ENC.add_player(name, health, ac, initiative, speed, player)
+    ENC.add_player(name, health, ac, initiative_bonus, speed, player)
 
 
 class App(Cmd):
@@ -35,9 +35,9 @@ class App(Cmd):
         name = input("Name: ")
         health = input("Health: ")
         ac = input("Armor Class: ")
-        initiative = input("Initiative: ")
+        initiative_bonus = input("Initiative Bonus: ")
         speed = input("Speed: ")
-        ENC.add_npc(name, health, ac, initiative, speed)
+        ENC.add_npc(name, health, ac, initiative_bonus, speed)
 
 
     def do_print_encounter(self, arg):
@@ -48,10 +48,10 @@ class App(Cmd):
         name = input("Name: ")
         health = input("Health: ")
         ac = input("Armor Class: ")
-        initiative = input("Initiative: ")
+        initiative_bonus = input("Initiative Bonus: ")
         speed = input("Speed: ")
         player = input("Played By: ")
-        ENC.add_player(name, health, ac, initiative, speed, player)
+        ENC.add_player(name, health, ac, initiative_bonus, speed, player)
 
     def do_set_initiatives(self):
         die = Dice(1, 20)
@@ -67,8 +67,21 @@ class App(Cmd):
             ENC.creatures[creature].heal(health_up)
 
     def do_damage(self, creature, health_down): # too many different ways to damage to do dice validation here
+        # TODO: make generic actors
         if health_down > 0:
             ENC.creatures[creature].heal(health_down)
+
+    def do_next(self):
+        pass
+        # changes self.current_player to next in order
+        if self.current_creature.status != 'dead':
+            # this allows us to keep them on screen and in the initiative
+            # which will help for when we have a GUI
+            # prints stats for current player
+            # self.current_player.begin_turn()
+
+    def do_encounter(self):
+        pass
 
 
 if __name__ == '__main__':
