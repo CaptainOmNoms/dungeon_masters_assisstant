@@ -1,11 +1,13 @@
+# pylint: disable=too-few-public-methods
 from marshmallow_sqlalchemy import ModelSchema
 from monster_tracker.character import CharacterOld
 from monster_tracker.models import Hero
 from monster_tracker.dice import Dice
 
-#class HeroSchema(ModelSchema):
-#    class Meta:
-#        model = Hero
+
+class HeroSchema(ModelSchema):
+    class Meta:
+        model = Hero
 
 
 class HeroOld(CharacterOld):
@@ -48,3 +50,7 @@ class HeroOld(CharacterOld):
             self.death_saves['saves'] = 0
             self.death_saves['failed'] = 0
             self.status = 'alive'
+
+    # TODO implement this
+    def begin_turn(self):
+        pass

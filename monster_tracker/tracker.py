@@ -1,46 +1,48 @@
 from operator import attrgetter
 from cmd2 import Cmd
 from monster_tracker.dice import Dice
-#from monster_tracker.models import Encounter, Monster, Hero
-from monster_tracker.encounter import EncounterOld
-from monster_tracker.character import Status
-from monster_tracker.monster import MonsterOld
+from monster_tracker.models import Encounter, Monster, Hero, s, Status
 
 # TODO: lookup to table function or custom
 
-#ENC = Encounter()
 
-
-def add_npc(enc):
+def add_npc(s, enc):
     name = input("Name: ")
     health = input("Health: ")
     ac = input("Armor Class: ")
     initiative_bonus = input("Initiative Bonus: ")
     speed = input("Speed: ")
-    enc.add_npc(name, health, ac, initiative_bonus, speed)
+    pc = Hero(name, health, ac, initiative_bonus, speed)
+    s.add(pc)
+    pc.encounter_id = enc.id
+    s.commit()
 
 
-def add_pc(enc):
+def add_pc(s, enc):
     name = input("Name: ")
     health = input("Health: ")
     ac = input("Armor Class: ")
     initiative_bonus = input("Initiative Bonus: ")
     speed = input("Speed: ")
     player = input("Played By: ")
-    enc.add_player(name, health, ac, initiative_bonus, speed, player)
+    pc = Hero(name, health, ac, initiative_bonus, speed)
+    pc.encounter_id = enc.id
+    s.add(pc)
+    s.commit()
 
 
 class App(Cmd):
     def __init__(self):
         super().__init__()
-        self.enc = EncounterOld()
+        self.enc = Encounter()
         self.current_player = None
+        self.session = s
 
     def do_hello(self, arg):
         print('Hello world')
 
     def do_add_npc(self, arg):
-        add_npc(self.enc)
+        add_npc(self.session, self.enc)
 
     def do_print_encounter(self, arg):
         print(self.enc)
@@ -48,7 +50,7 @@ class App(Cmd):
         #   item.print()
 
     def do_add_pc(self, arg):
-        add_pc(self.enc)
+        add_pc(self.session, self.enc)
 
     def do_set_initiatives(self):
         die = Dice(1, 20)
@@ -66,12 +68,14 @@ class App(Cmd):
             key=attrgetter('initiative_bonus', 'initiative'),
             reverse=True)
 
+    # TODO rewrite
     def do_heal(
             self, creature, health_up
     ):  # too many different ways to heal to do dice validation here
         if health_up > 0:
             self.enc.creatures[creature].heal(health_up)
 
+    # TODO rewrite
     def do_damage(
             self, creature, health_down
     ):  # too many different ways to damage to do dice validation here
@@ -79,22 +83,24 @@ class App(Cmd):
         if health_down > 0:
             self.enc.creatures[creature].heal(health_down)
 
-    def do_next(self, id):
+    # TODO rewrite
+    def do_next(self):
         self.current_player = self.enc.creatures[id]
         if self.current_player.status == Status.DEAD:
-            if isinstance(self.current_player, MonsterOld):
+            if isinstance(self.current_player, Monster):
                 self.enc.total_xp += self.current_player.xp
         if self.current_player.status == Status.ALIVE:
             self.current_player.do_turn()
         if self.current_player.status == Status.UNCONSCIOUS:
             self.current_player.dead()
 
+    # TODO rewrite
     def do_encounter(self):
         turn = 0
         while True:
             self.do_print_encounter('')
             self.do_set_initiatives()
-            self.do_next(turn)
+            self.do_next()
             turn += 1
 
     def do_load_from_cfg(self, arg):

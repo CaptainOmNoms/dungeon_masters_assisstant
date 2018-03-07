@@ -1,10 +1,12 @@
+# pylint disable=too-few-public-methods
 from marshmallow_sqlalchemy import ModelSchema
-from monster_tracker.models import Monster, Character
+from monster_tracker.models import Monster
 from monster_tracker.character import CharacterOld
 
-#class MonsterSchema(ModelSchema):
-#    class Meta:
-#        model = Monster
+
+class MonsterSchema(ModelSchema):
+    class Meta:
+        model = Monster
 
 
 class MonsterOld(CharacterOld):
@@ -18,6 +20,12 @@ class MonsterOld(CharacterOld):
         self.xp = xp
         # TODO is alive the right word for this. Should there be a marker for being undead?
         self.alive = True
+
+    def death(self):
+        pass
+
+    def begin_turn(self):
+        pass
 
 
 # TODO create lookup function
