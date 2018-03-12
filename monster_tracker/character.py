@@ -5,7 +5,7 @@ from monster_tracker.models import Character
 #class CharacterSchema(ModelSchema):
 #    class Meta:
 #        model = Character
-Status = IntEnum('Status', 'DEAD ALIVE UNCONSCIOUS')
+Status = IntEnum('Status', 'DEAD ALIVE UNCONSCIOUS STABLE')
 
 
 class CharacterOld(object):
@@ -21,7 +21,14 @@ class CharacterOld(object):
         self.status = Status.ALIVE
         self.moved = False
 
-    def damage(self, damage):
+    def damage(self, damage, type):
+        # check if self is resistant to type damage
+        # TODO this could get tricky with rage abilities
+        #if resistant:
+        #    damage = damage / 2
+        #check if char is vulnerabe to type damage
+        #if vulnerabe:
+        #    damage = damage * 2
         self.health -= damage
         if self.health <= 0:
             self.health = 0
@@ -36,7 +43,8 @@ class CharacterOld(object):
 
     def __repr__(self):
         return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
-            self.name, self.health, self.initiative, self.ac, self.speed)
+            self.name, self.health, self.initiative, self.ac, self.speed
+        )
 
     def do_action(self):
         pass

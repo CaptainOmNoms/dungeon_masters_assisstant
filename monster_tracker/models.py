@@ -8,10 +8,10 @@ from .dice import Dice
 
 Base = declarative_base()  # pylint: disable=invalid-name
 
-Status = IntEnum('Status', 'DEAD ALIVE UNCONSCIOUS')  # pylint: disable=invalid-name
+Status = IntEnum('Status', 'DEAD ALIVE UNCONSCIOUS STABLE')  # pylint: disable=invalid-name
 
 
-class Character(Base):
+class Character(Base):  # pylint: disable=too-many-instance-attributes
     __tablename__ = 'character'
     id = Column(Integer, primary_key=True)
     name = Column(Text)
@@ -23,10 +23,7 @@ class Character(Base):
     encounter_id = Column(Integer, ForeignKey('encounter.id'))
     encounter = relationship('Encounter', back_populates='characters')
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'character',
-        'polymorphic_on': type
-    }
+    __mapper_args__ = {'polymorphic_identity': 'character', 'polymorphic_on': type}
 
     def alive(self):
         return self.health > 0
@@ -67,13 +64,20 @@ class Character(Base):
 
     def __repr__(self):
         return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
-            self.name, self.health, self.initiative, self.ac, self.speed)
+            self.name, self.health, self.initiative, self.ac, self.speed
+        )
 
 
 class Monster(Character):
     experience = Column(Integer)
 
     __mapper_args__ = {'polymorphic_identity': 'monster'}
+
+    def death(self):
+        return self.experience
+
+    def begin_turn(self):
+        pass
 
 
 class Hero(Character):
@@ -85,10 +89,7 @@ class Hero(Character):
         die = Dice(1, 20)
         roll = 0
         while not roll:
-            roll = die.check_roll(
-                int(
-                    input("Enter death save roll for {0}: ".format(
-                        self.name))))
+            roll = die.check_roll(int(input("Enter death save roll for {0}: ".format(self.name))))
         reset = False
         if roll == 1:  # roll a nat 1
             self.death_saves['failed'] += 2
@@ -98,7 +99,7 @@ class Hero(Character):
             self.death_saves['saved'] += 1
             if self.death_saves['saved'] == 3:
                 reset = True
-                self.status = 'stable'
+                self.status = Status.STABLE
         else:  # rolled a nat 20
             self.health = 1
             reset = True
@@ -106,9 +107,11 @@ class Hero(Character):
         if self.death_saves['failed'] == 3:
             reset = True
             self.satus = Status.DEAD
+            return True
         if reset:
             self.death_saves['saves'] = 0
             self.death_saves['failed'] = 0
+        return False
 
     # TODO implement this
     def begin_turn(self):
@@ -121,8 +124,8 @@ class Hero(Character):
 
     def __repr__(self):
         return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
-            self.name, self.health, self.initiative, self.armor_class,
-            self.speed)
+            self.name, self.health, self.initiative, self.armor_class, self.speed
+        )
 
 
 class Encounter(Base):
@@ -130,11 +133,11 @@ class Encounter(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     characters = relationship(
-        'Character',
-        back_populates='encounter',
-        collection_class=attribute_mapped_collection('name'))
+        'Character', back_populates='encounter', collection_class=attribute_mapped_collection('name')
+    )
 
-    def deal_damage(self, done_by, done_to, amount, type):
+    @staticmethod
+    def deal_damage(done_by, done_to, amount, type):
         done_to.damage(amount)
 
         #TODO add damage to done_by's damage quanity tracker
@@ -145,6 +148,9 @@ class Encounter(Base):
         for val in self.creatures.values():
             ret += repr(val)
         return ret
+
+    def __init__(self):
+        self.total_xp = 0
 
 
 def create_session(uri):

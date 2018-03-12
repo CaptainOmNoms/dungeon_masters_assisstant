@@ -1,0 +1,6 @@
+[style]
+based_on_style = google
+spaces_before_comment = 2
+COLUMN_LIMIT = 120
+DEDENT_CLOSING_BRACKETS = True
+ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT = True

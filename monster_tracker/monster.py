@@ -5,6 +5,7 @@ from monster_tracker.character import CharacterOld
 
 
 class MonsterSchema(ModelSchema):
+
     class Meta:
         model = Monster
 
@@ -26,7 +27,3 @@ class MonsterOld(CharacterOld):
 
     def begin_turn(self):
         pass
-
-
-# TODO create lookup function
-# TODO database
