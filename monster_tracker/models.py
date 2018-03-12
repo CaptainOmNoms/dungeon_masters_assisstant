@@ -15,8 +15,11 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     __tablename__ = 'character'
     id = Column(Integer, primary_key=True)
     name = Column(Text)
-    health = Column(Integer)
+    max_health = Column(Integer)
+    temp_health = Column(Integer)
+    current_health = Column(Integer)
     armor_class = Column(Integer)
+    initiative_bonus = Column(Integer)
     initiative = Column(Integer)
     speed = Column(Integer)
     type = Column(Text)
@@ -28,14 +31,16 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     def alive(self):
         return self.health > 0
 
-    def damage(self, dealt_damage):
+    def damage(self, dealt_damage, damage_type):
         self.health -= dealt_damage
         if self.health < 0:
             self.health = 0
 
     def heal(self, healed_damage):
-        self.health += healed_damage
-        # TODO we need a max health counter as well as a current one
+        temp = self.current_health + healed_damage
+        maximum = self.current_health + self.temp_health
+        if temp <= maximum:
+            self._current_health += healed_damage
 
     def move(self):
         self.moved = True
@@ -78,6 +83,7 @@ class Monster(Character):
 
     def begin_turn(self):
         pass
+        #TODO print available actions, bonus actions, and speed
 
 
 class Hero(Character):
@@ -106,7 +112,7 @@ class Hero(Character):
             self.status = Status.ALIVE
         if self.death_saves['failed'] == 3:
             reset = True
-            self.satus = Status.DEAD
+            self.status = Status.DEAD
             return True
         if reset:
             self.death_saves['saves'] = 0
@@ -116,6 +122,10 @@ class Hero(Character):
     # TODO implement this
     def begin_turn(self):
         pass
+        #if self.player == 'DM':
+            #TODO print available actions, bonus actions, and speed
+        #else:
+            #await next signal?
 
     def __init__(self, name, health, ac, initiative_bonus, speed, player='DM'):
         super().__init__(name, health, ac, initiative_bonus, 0, speed)
@@ -132,14 +142,16 @@ class Encounter(Base):
     __tablename__ = 'encounter'
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
+    total_xp = Column(Integer)
     characters = relationship(
         'Character', back_populates='encounter', collection_class=attribute_mapped_collection('name')
     )
 
-    @staticmethod
-    def deal_damage(done_by, done_to, amount, type):
-        done_to.damage(amount)
-
+    def deal_damage(self, done_by, done_to, amount, damage_type):
+        done_to.damage(amount, damage_type)
+        if done_to.current_health == 0:
+            if isinstance(done_to, Monster):
+                self.total_xp += done_to.experience
         #TODO add damage to done_by's damage quanity tracker
         #TODO if done_to.status == dead && done_to is monster add xp to encounter.total_xp
 
