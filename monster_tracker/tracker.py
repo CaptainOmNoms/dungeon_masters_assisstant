@@ -1,35 +1,25 @@
-from itertools import cycle
+from itertools import cycle, chain
 from operator import attrgetter
+from pathlib import Path
+import re
 from cmd2 import Cmd
 from more_itertools import peekable, consume
 import ui
+import tabulate
+import yaml
 from monster_tracker.dice import Dice
 from monster_tracker.models import Encounter, Monster, Hero, s, Status
 
-# TODO: lookup to table function or custom <- no longer necessary?
 
-
-def add_npc(s, enc):
-    name = input("Name: ")
-    health = input("Health: ")
-    ac = input("Armor Class: ")
-    initiative_bonus = input("Initiative Bonus: ")
-    speed = input("Speed: ")
-    pc = Hero(name, health, ac, initiative_bonus, speed)
-    s.add(pc)
-    pc.encounter_id = enc.id
+def add_npc(s, enc, name, health, ac, init_bon, speed):
+    npc = Hero(name, health, ac, init_bon, speed)
+    s.add(npc)
+    npc.encounter_id = enc.id
     s.commit()
-    return pc
+    return npc
 
-
-def add_pc(s, enc):
-    name = input("Name: ")
-    health = input("Health: ")
-    ac = input("Armor Class: ")
-    initiative_bonus = input("Initiative Bonus: ")
-    speed = input("Speed: ")
-    player = input("Played By: ")
-    pc = Hero(name, health, ac, initiative_bonus, speed, player)
+def add_pc(s, enc, name, health,ac, init_bon, speed, player):
+    pc = Hero(name, health, ac, init_bon, speed, player)
     pc.encounter_id = enc.id
     s.add(pc)
     s.commit()
@@ -44,24 +34,40 @@ class App(Cmd):
         self.current_player = None
         self.session = s
 
-    def do_add_npc(self, arg):
+    def do_add_npc(self, _):
         if not self.enc:
             if not ui.ask_yes_no('There is no encounter set. Would you like to set it before proceeding?'):
                 return
-        pc = add_npc(self.session, self.enc)
-        if self.enc:
-            self.enc.characters[pc.name] = pc
 
-    def do_add_pc(self, arg):
+        name = ui.ask_string('Name')
+        health = ui.ask_string('Health')
+        ac = ui.ask_string('AC')
+        ib = ui.ask_string('Initiative Bonus')
+        speed = ui.ask_string('Speed')
+        npc = add_npc(self.session, self.enc, name, health, ac, ib, speed)
+        if self.enc:
+            self.enc.characters[npc.name] = npc
+
+    def do_add_pc(self, _):
         if not self.enc:
             if not ui.ask_yes_no('There is no encounter set. Would you like to set it before proceeding?'):
                 return
-        pc = add_pc(self.session, self.enc)
+
+        name = ui.ask_string('Name')
+        health = ui.ask_string('Health')
+        ac = ui.ask_string('AC')
+        ib = ui.ask_string('Initiative Bonus')
+        speed = ui.ask_string('Speed')
+        player = ui.ask_string('Player')
+        pc = add_pc(self.session, self.enc, name, health, ac, ib, speed, player)
         if self.enc:
             self.enc.characters[pc.name] = pc
 
-    def do_print_encounter(self, arg):
-        print(self.enc)
+    def do_print_encounter(self, _):
+        print('\nEncounter {}\n{}\n'.format(self.enc.name, '-' * (10+len(self.enc.name))))
+        print(tabulate.tabulate(
+            map(lambda x: x.to_tuple(), self.enc.characters.values()),
+            headers=['Name', 'Current HP', 'AC', 'Initiative', 'speed', 'Max HP', 'Temp HP']))
 
     def do_set_initiatives(self):
         die = Dice(1, 20)
@@ -135,13 +141,46 @@ class App(Cmd):
 
     def do_create_encounter(self, arg):
         name = ui.ask_string('Encounter name')
-        e = Encounter()
-        e.name = name
-        s.add(e)
+        enc = Encounter()
+        enc.name = name
+        s.add(enc)
         s.commit()
 
     def do_load_from_cfg(self, arg):
-        pass
+        same_dir = Path('.').glob('*.yaml')
+        data_dir = Path(__file__).parent.joinpath('data').glob('*.yaml')
+
+        name_pairs = {re.sub('.yaml', '', f.name): f for f in chain(same_dir, data_dir)}
+        f_name = ui.ask_choice(
+            'Which YAML file would you like to load? Press <ENTER> to enter your own file path',
+            list(name_pairs.keys()))
+
+        f_path = name_pairs.get(f_name)
+
+        while not f_name:
+            f_name = ui.ask_string('Please enter the full file path to the YAML file you would like to load. Press <ENTER> to stop loading a YAML file.')
+            if not f_name:
+                return
+            f_path = Path(f_name)
+            if not f_path.exists():
+                ui.error('Path does not exist')
+
+        with f_path.open() as f:
+            encounter = yaml.load(f)
+
+        for e in encounter:
+            chars = e.pop('characters') if 'characters' in e else []
+            enc = Encounter(**e)
+            s.add(enc)
+            s.commit()
+            for character in chars:
+                if 'player' in character:
+                    c = Hero(**character)
+                else:
+                    c = Monster(**character)
+                enc.characters[c.name] = c
+            s.commit()
+        ui.info('Encounter {} loaded'.format(enc.name))
 
 
 if __name__ == '__main__':

@@ -34,13 +34,16 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
 
     __mapper_args__ = {'polymorphic_identity': 'character', 'polymorphic_on': type}
 
+    def to_tuple(self):
+        return (self.name, self.current_health, self.armor_class, self.initiative, self.speed, self.max_health, self.temp_health)
+
     def alive(self):
-        return self.health > 0
+        return self.current_health > 0
 
     def damage(self, dealt_damage, damage_type):
-        self.health -= dealt_damage
-        if self.health < 0:
-            self.health = 0
+        self.current_health -= dealt_damage
+        if self.current_health < 0:
+            self.current_health = 0
 
     def heal(self, healed_damage):
         temp = self.current_health + healed_damage
@@ -63,19 +66,21 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     def death(self):
         raise NotImplementedError('No death for generic character')
 
-    def __init__(self, name, health, ac, initiative_bonus, initiative, speed):
+    def __init__(self, name=None, max_health=None, ac=None, initiative_bonus=0, initiative=0, speed=None, temp_health=0, current_health=None):
         self.name = name
-        self.health = health
-        self.ac = ac
+        self.armor_class = ac
         self.initiative_bonus = initiative_bonus
         self.initiative = initiative
         self.speed = speed
         self.status = Status.ALIVE
+        self.max_health = max_health
+        self.temp_health = temp_health
+        self.current_health = current_health or self.max_health
         self.moved = False
 
     def __repr__(self):
         return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
-            self.name, self.health, self.initiative, self.ac, self.speed
+            self.name, self.current_health, self.initiative, self.ac, self.speed
         )
 
 
@@ -113,7 +118,7 @@ class Hero(Character):
                 reset = True
                 self.status = Status.STABLE
         else:  # rolled a nat 20
-            self.health = 1
+            self.current_health = 1
             reset = True
             self.status = Status.ALIVE
         if self.death_saves['failed'] == 3:
@@ -133,14 +138,17 @@ class Hero(Character):
         #else:
         #await next signal?
 
-    def __init__(self, name, health, ac, initiative_bonus, speed, player='DM'):
-        super().__init__(name, health, ac, initiative_bonus, 0, speed)
+    def __init__(self, name=None, max_health=None, ac=None,
+                 initiative_bonus=0, speed=0, player='DM', current_health=0, temp_health=0):
+        super().__init__(name=name, ac=ac, initiative_bonus=initiative_bonus,
+                initiative=0, speed=speed, current_health=current_health,
+                temp_health=temp_health, max_health=max_health)
         self.death_saves = {'failed': 0, 'saved': 0}
         self.player = player
 
     def __repr__(self):
         return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
-            self.name, self.health, self.initiative, self.armor_class, self.speed
+            self.name, self.current_health, self.initiative, self.armor_class, self.speed
         )
 
 
@@ -162,14 +170,16 @@ class Encounter(Base):
         #TODO if done_to.status == dead && done_to is monster add xp to encounter.total_xp
 
     def __repr__(self):
-        ret = ''
+        return '\n'.join(list(map(lambda c: repr(c), self.characters.values())))
+        ret = []
         for val in self.characters.values():
-            ret += repr(val)
+            ret += '{}\n'.format(repr(val))
         return ret
 
-    def __init__(self):
+    def __init__(self, name=None):
         self.total_xp = 0
         self.init_order = []
+        self.name = name
 
 
 def create_session(uri):
