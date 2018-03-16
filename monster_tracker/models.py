@@ -40,7 +40,7 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         temp = self.current_health + healed_damage
         maximum = self.current_health + self.temp_health
         if temp <= maximum:
-            self._current_health += healed_damage
+            self.current_health += healed_damage
 
     def move(self):
         self.moved = True
