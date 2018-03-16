@@ -10,10 +10,16 @@ Base = declarative_base()  # pylint: disable=invalid-name
 
 Status = IntEnum('Status', 'DEAD ALIVE UNCONSCIOUS STABLE')  # pylint: disable=invalid-name
 
+# So I think we should store the normal attributes for a monster
+# Then when the DM looks it up, they have the option to edit any attributes they need to
+# And a copy of that monster gets created with the name they specify
+# That way there can always be one source of monster data but a bunch of different monsters
+# Maybe we need a monster template class?
+
 
 class Character(Base):  # pylint: disable=too-many-instance-attributes
     __tablename__ = 'character'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(Text)
     max_health = Column(Integer)
     temp_health = Column(Integer)
@@ -123,9 +129,9 @@ class Hero(Character):
     def begin_turn(self):
         pass
         #if self.player == 'DM':
-            #TODO print available actions, bonus actions, and speed
+        #TODO print available actions, bonus actions, and speed
         #else:
-            #await next signal?
+        #await next signal?
 
     def __init__(self, name, health, ac, initiative_bonus, speed, player='DM'):
         super().__init__(name, health, ac, initiative_bonus, 0, speed)
@@ -157,12 +163,13 @@ class Encounter(Base):
 
     def __repr__(self):
         ret = ''
-        for val in self.creatures.values():
+        for val in self.characters.values():
             ret += repr(val)
         return ret
 
     def __init__(self):
         self.total_xp = 0
+        self.init_order = []
 
 
 def create_session(uri):
