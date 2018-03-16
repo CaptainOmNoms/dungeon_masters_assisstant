@@ -33,6 +33,10 @@ class App(Cmd):
         self.enc = None
         self.current_player = None
         self.session = s
+        self.enc.init_order = []
+
+    def do_hello(self, arg):
+        print('Hello world')
 
     def do_add_npc(self, _):
         if not self.enc:
@@ -111,19 +115,19 @@ class App(Cmd):
                 # So what we're saying here is that any creature that drops to 0 health will automatically become
                 # unconscious. Then, when they call Character.dead() they will have their status set to DEAD
                 # This way we can clean up heros and Monsters alike
-                if self.current_player.status == Status.UNCONSCIOUS:
-                    ret = self.current_player.dead()
-                    if ret:
-                        if isinstance(ret, Monster):
-                            self.enc.total_xp += ret
-                        self.enc.init_order.remove(creature)
-                        # By breaking here, we exit the for loop
-                        # This will cause a recomputation of the circular list
-                        # We then get the next item in the list
-                        next_char = self.enc.init_order.index(init_order.peek())
-                        break
+                if isinstance(self.current_player, Hero):
+                    if self.current_player.status == Status.UNCONSCIOUS:
+                        if self.current_player.dead():
+                            self.enc.init_order.remove(creature)
+                            # By breaking here, we exit the for loop
+                            # This will cause a recomputation of the circular list
+                            # We then get the next item in the list
+                            next_char = self.enc.init_order.index(init_order.peek())
+                            break
                 if self.current_player.status == Status.ALIVE:
                     self.current_player.do_turn()
+                if isinstance(self.current_player, Monster):
+                    self.enc.total_xp += self.current_player.experience
 
     def do_begin_encounter(self, encounter_name=''):
         self.enc = None
