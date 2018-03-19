@@ -35,21 +35,27 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     __mapper_args__ = {'polymorphic_identity': 'character', 'polymorphic_on': type}
 
     def to_tuple(self):
-        return (self.name, self.current_health, self.armor_class, self.initiative, self.speed, self.max_health, self.temp_health)
+        return (
+            self.name, self.current_health, self.armor_class, self.initiative, self.speed, self.max_health,
+            self.temp_health
+        )
 
     def alive(self):
         return self.current_health > 0
 
-    def damage(self, dealt_damage, damage_type):
+    def damage(self, dealt_damage):
         self.current_health -= dealt_damage
-        if self.current_health < 0:
-            self.current_health = 0
+        self.temp_health -= dealt_damage
+        if self.temp_health < 0:
+            self.temp_health = 0
 
     def heal(self, healed_damage):
-        temp = self.current_health + healed_damage
-        maximum = self.current_health + self.temp_health
-        if temp <= maximum:
-            self.current_health += healed_damage
+        self.current_health += healed_damage
+        if self.current_health > self.max_health + self.temp_health:
+            self.current_health = self.max_health + self.temp_health
+
+    def adjust_max_health(self, health):
+        self.max_health += health
 
     def move(self):
         self.moved = True
@@ -66,7 +72,17 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     def death(self):
         raise NotImplementedError('No death for generic character')
 
-    def __init__(self, name=None, max_health=None, ac=None, initiative_bonus=0, initiative=0, speed=None, temp_health=0, current_health=None):
+    def __init__(
+        self,
+        name=None,
+        max_health=None,
+        ac=None,
+        initiative_bonus=0,
+        initiative=0,
+        speed=None,
+        temp_health=0,
+        current_health=None
+    ):
         self.name = name
         self.armor_class = ac
         self.initiative_bonus = initiative_bonus
@@ -138,11 +154,27 @@ class Hero(Character):
         #else:
         #await next signal?
 
-    def __init__(self, name=None, max_health=None, ac=None,
-                 initiative_bonus=0, speed=0, player='DM', current_health=0, temp_health=0):
-        super().__init__(name=name, ac=ac, initiative_bonus=initiative_bonus,
-                initiative=0, speed=speed, current_health=current_health,
-                temp_health=temp_health, max_health=max_health)
+    def __init__(
+        self,
+        name=None,
+        max_health=None,
+        ac=None,
+        initiative_bonus=0,
+        speed=0,
+        player='DM',
+        current_health=0,
+        temp_health=0
+    ):
+        super().__init__(
+            name=name,
+            ac=ac,
+            initiative_bonus=initiative_bonus,
+            initiative=0,
+            speed=speed,
+            current_health=current_health,
+            temp_health=temp_health,
+            max_health=max_health
+        )
         self.death_saves = {'failed': 0, 'saved': 0}
         self.player = player
 

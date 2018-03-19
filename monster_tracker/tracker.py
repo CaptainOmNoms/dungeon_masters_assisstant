@@ -8,7 +8,7 @@ import ui
 import tabulate
 import yaml
 from monster_tracker.dice import Dice
-from monster_tracker.models import Encounter, Monster, Hero, s, Status
+from monster_tracker.models import Encounter, Character, Monster, Hero, s, Status
 
 
 def add_npc(s, enc, name, health, ac, init_bon, speed):
@@ -18,7 +18,8 @@ def add_npc(s, enc, name, health, ac, init_bon, speed):
     s.commit()
     return npc
 
-def add_pc(s, enc, name, health,ac, init_bon, speed, player):
+
+def add_pc(s, enc, name, health, ac, init_bon, speed, player):
     pc = Hero(name, health, ac, init_bon, speed, player)
     pc.encounter_id = enc.id
     s.add(pc)
@@ -30,8 +31,8 @@ class App(Cmd):
 
     def __init__(self):
         super().__init__()
-        self.enc = None
-        self.current_player = None
+        self.enc = Encounter()
+        self.current_player = Character()
         self.session = s
         self.enc.init_order = []
 
@@ -68,10 +69,13 @@ class App(Cmd):
             self.enc.characters[pc.name] = pc
 
     def do_print_encounter(self, _):
-        print('\nEncounter {}\n{}\n'.format(self.enc.name, '-' * (10+len(self.enc.name))))
-        print(tabulate.tabulate(
-            map(lambda x: x.to_tuple(), self.enc.characters.values()),
-            headers=['Name', 'Current HP', 'AC', 'Initiative', 'speed', 'Max HP', 'Temp HP']))
+        print('\nEncounter {}\n{}\n'.format(self.enc.name, '-' * (10 + len(self.enc.name))))
+        print(
+            tabulate.tabulate(
+                map(lambda x: x.to_tuple(), self.enc.characters.values()),
+                headers=['Name', 'Current HP', 'AC', 'Initiative', 'speed', 'Max HP']
+            )
+        )
 
     def do_set_initiatives(self):
         die = Dice(1, 20)
@@ -87,7 +91,6 @@ class App(Cmd):
 
     # TODO rewrite
     def do_heal(self, creature, health_up):
-        # too many different ways to heal to do dice validation here
         if health_up > 0:
             self.enc.characters[creature].heal(health_up)
 
@@ -97,6 +100,9 @@ class App(Cmd):
         # TODO: make generic actors
         if health_down > 0:
             self.enc.characters[creature].heal(health_down)
+
+    def do_health_adjust(self, creature, health):
+        self.enc.characters[creature].adjust_max_health(health)
 
     # TODO needs work on the status checks and such
     def do_encounter(self):
@@ -157,12 +163,15 @@ class App(Cmd):
         name_pairs = {re.sub('.yaml', '', f.name): f for f in chain(same_dir, data_dir)}
         f_name = ui.ask_choice(
             'Which YAML file would you like to load? Press <ENTER> to enter your own file path',
-            list(name_pairs.keys()))
+            list(name_pairs.keys())
+        )
 
         f_path = name_pairs.get(f_name)
 
         while not f_name:
-            f_name = ui.ask_string('Please enter the full file path to the YAML file you would like to load. Press <ENTER> to stop loading a YAML file.')
+            f_name = ui.ask_string(
+                'Please enter the full file path to the YAML file you would like to load. Press <ENTER> to stop loading a YAML file.'
+            )
             if not f_name:
                 return
             f_path = Path(f_name)

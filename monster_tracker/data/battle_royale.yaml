@@ -1,0 +1,66 @@
+
+---
+- name: Battle Royale
+  characters:
+      - name: Sorrow
+        max_health: 33
+        temp_health: 0
+        current_health: 33
+        ac: 13
+        initiative_bonus: 1
+        speed: 30
+        player: Rich
+
+      - name: Albert
+        max_health: 55
+        temp_health: 0
+        current_health: 55
+        ac: 17
+        initiative_bonus: 2
+        speed: 40
+        player: Pavle
+
+      - name: Balasar
+        max_health: 38
+        temp_health: 0
+        current_health: 38
+        ac: 18
+        initiative_bonus: 1
+        speed: 30
+        player: Julien
+
+      - name: Wenner
+        max_health: 43
+        temp_health: 0
+        current_health: 43
+        ac: 19
+        initiative_bonus: 5
+        speed: 35
+        player: Turi
+
+      - name: Leo
+        max_health: 38
+        temp_health: 0
+        current_health: 38
+        ac: 16
+        initiative_bonus: 5
+        speed: 35
+        player: Jim
+
+      - name: Thundar
+        max_health: 58
+        temp_health: 0
+        current_health: 58
+        ac: 17
+        initiative_bonus: 1
+        speed: 30
+        player: Clarence
+
+      - name: Zanna
+        max_health: 49
+        temp_health: 0
+        current_health: 49
+        ac: 16
+        initiative_bonus: 4
+        speed: 25
+        player: Kate
