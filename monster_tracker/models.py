@@ -30,6 +30,7 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     initiative_bonus = Column(Integer)
     initiative = Column(Integer)
     speed = Column(Integer)
+    movement = Column(Integer)
     status = Column(Integer)
     type = Column(Text)
     encounter_id = Column(Integer, ForeignKey('encounter.id'))
@@ -56,8 +57,8 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         self.current_health += health
 
     def move(self, feet):
-        if self.moved > 0:
-            self.moved -= feet
+        if self.movement > 0:
+            self.movement -= feet
         else:
             print('{} has already moved their full movement'.format(self.name))
 
@@ -93,7 +94,7 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         self.max_health = max_health
         self.temp_health = temp_health
         self.current_health = current_health or self.max_health
-        self.moved = speed
+        self.movement = speed
 
     def __repr__(self):
         return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(

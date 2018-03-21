@@ -118,12 +118,14 @@ class App(Cmd):
         if health_down > 0:
             self.enc.characters[creature].heal(health_down)
 
-    def do_attack(self, target, roll):
+    def do_attack(self):
+        target = ui.ask_string('Who are you attacking')
+        roll = ui.ask_string('What did you roll to hit?')
         if roll >= self.enc.characters(target).ac:
             damage = int(ui.ask_string('You Hit! How much damage'))
             self.do_damage(self.enc.characters(target, damage))
         else:
-            print('Sorry you missed')
+            print('Ya missed bitch')
 
     def do_health_adjust(self, creature, health):
         self.enc.characters[creature].adjust_max_health(health)
@@ -162,7 +164,7 @@ class App(Cmd):
                         input()
                     else:
                         print('{} take your turn'.format(self.current_player.name))
-                        if self.player == 'DM':
+                        if self.current_player.player == 'DM':
                             print('DM do your shit')
                         else:
                             task = ui.ask_string('What would you like to do? (Move:m , Attack:a or Quit:q)')
@@ -171,9 +173,7 @@ class App(Cmd):
                                     num = int(ui.ask_string('How far are you moving'))
                                     self.current_player.move(num)
                                 elif task == 'a':
-                                    target = ui.ask_string('Who are you attacking')
-                                    roll = ui.ask_string('What did you roll to hit?')
-                                    self.do_attack(target, roll)
+                                    self.do_attack()
                                 task = ui.ask_string('What would you like to do? (Move:m , Attack:a or Quit:q)')
 
     def do_begin_encounter(self, encounter_name=''):
