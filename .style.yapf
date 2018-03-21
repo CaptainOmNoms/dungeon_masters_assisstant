@@ -1,6 +1,15 @@
 [style]
 based_on_style = google
+allow_multiline_lambdas = true
 spaces_before_comment = 2
-COLUMN_LIMIT = 120
-DEDENT_CLOSING_BRACKETS = True
-ALIGN_CLOSING_BRACKET_WITH_VISUAL_INDENT = True
+indent_dictionary_value = true
+spaces_around_default_or_named_assign = false
+split_arguments_when_comma_terminated = false
+split_before_logical_operator = true
+coalesce_brackets = false
+column_limit = 119
+dedent_closing_brackets = true
+align_closing_bracket_with_visual_indent = true
+each_dict_entry_on_separate_line = false
+split_before_dict_set_generator = true
+split_complex_comprehension = true
