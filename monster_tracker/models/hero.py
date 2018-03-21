@@ -58,6 +58,16 @@ class Hero(Character):
                     self.status = Status.UNCONSCIOUS
                     self.current_health = 0
 
+    def heal(self, healed_damage):
+        if self.status != Status.DEAD:
+            self.current_health += healed_damage
+            if self.current_health > self.max_health + self.temp_health:
+                self.current_health = self.max_health + self.temp_health
+            if self.status != Status.ALIVE:
+                self.status = Status.ALIVE
+            self.death_saves['failed'] = 0
+            self.death_saves['saved'] = 0
+
     def add_temp_health(self, temp_health):
         self.current_health += temp_health
         self.temp_health += temp_health

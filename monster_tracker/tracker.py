@@ -74,19 +74,10 @@ class App(Cmd):
         print(
             tabulate.tabulate(
                 map(lambda c: self.enc.characters[c].to_tuple(), self.enc.init_order),
-                headers=['Name', 'HP', 'AC', 'Initiative', 'Movement'],
+                headers=['Name', 'HP', 'AC', 'Initiative', 'Movement', 'Status'],
                 stralign='right'
             )
         )
-        print()
-        print()
-
-    def do_print_init_order(self, _):
-        os.system('cls')
-        print('Initiative Order')
-        print('----------------')
-        for name in self.enc.init_order:
-            print(name)
         print()
         print()
 
@@ -100,10 +91,11 @@ class App(Cmd):
         temp = sorted(self.enc.characters.values(), key=attrgetter('initiative', 'initiative_bonus'), reverse=True)
         for char in temp:
             self.enc.init_order.append(char.name)
-        ui.info(ui.red, 'Initiative order has been set. To print the initiative order at any time enter i')
+        ui.info(ui.red, 'Initiative order has been set.')
+        input()
 
     def do_heal(self):
-        target = ui.ask_string('Who is being healed')
+        target = ui.ask_choice('Who is being healed?', self.enc.init_order)
         health_up = 0
         while not health_up:
             health_up = int(ui.ask_string('How much is being healed'))
@@ -111,7 +103,7 @@ class App(Cmd):
                 self.enc.characters[target].heal(health_up)
             else:
                 health_up = 0
-                ui.info(ui.red, 'Must heal for more than 0')
+                ui.info(ui.red, 'You can\'t heal 0')
 
     # TODO make generic actors
     def do_damage(self, target, health_down):
@@ -121,11 +113,8 @@ class App(Cmd):
             ui.info(ui.red, 'You must do positive damage')
 
     def do_attack(self):
-        target = None
         damage = 0
-        # TODO make a ui.ask_choice?
-        while target not in self.enc.init_order:
-            target = ui.ask_string('Who are you attacking')
+        target = ui.ask_choice('Who are you attacking?', self.enc.init_order)
         while not damage:
             damage = int(ui.ask_string('How much damage'))
         self.do_damage(target, damage)
@@ -137,7 +126,6 @@ class App(Cmd):
     def do_encounter(self, arg):
         self.do_print_encounter('')
         self.do_set_initiatives()
-        self.do_print_init_order('')
         next_char = None
         while True:
             init_order = peekable(cycle(self.enc.init_order))
@@ -171,33 +159,19 @@ class App(Cmd):
                         print('{} is stable and must be healed to take turn'.format(self.current_player.name))
                         input()
                     if self.current_player.status == Status.ALIVE:
-                        task = ui.ask_string(
-                            'What would {} like to do? (Move:m , Attack:a, Heal:h or Done:d)'.format(
-                                self.current_player.name
-                            )
-                        )
-                        while task != 'd':
-                            if task == 'm':
+                        options = ['Done', 'Attack', 'Heal', 'Move']
+                        task = ui.ask_choice('What would {} like to do?'.format(self.current_player.name), options)
+                        while task != 'Done':
+                            if task == 'Move':
                                 num = int(ui.ask_string('How far are you moving'))
                                 self.enc.characters[self.current_player.name].move(num)
-                            elif task == 'a':
+                            elif task == 'Attack':
                                 self.do_attack()
-                            elif task == 'h':
+                            elif task == 'Heal':
                                 self.do_heal()
-                            elif task == 'i':
-                                self.do_print_init_order('')
-                                ui.info(ui.red, 'Current Turn: {}'.format(self.current_player.name))
-                            elif task == 'e':
-                                self.do_print_encounter('')
-                            elif task == 'd':
+                            elif task == 'Done':
                                 ui.info(ui.red, '{} has ended their turn'.format(self.current_player.name))
-                            else:
-                                ui.info(ui.red, 'Opps thats not an option. Try again')
-                            task = ui.ask_string(
-                                'What would {} like to do? (Move:m , Attack:a or done:d)'.format(
-                                    self.current_player.name
-                                )
-                            )
+                            task = ui.ask_choice('What would {} like to do?'.format(self.current_player.name), options)
 
     def do_begin_encounter(self, encounter_name=''):
         self.enc = None
