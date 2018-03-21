@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Text
 from sqlalchemy.orm import reconstructor
 
+from monster_tracker.dice import Dice
 from monster_tracker.models import Status
 from monster_tracker.models.characters import Character
-from monster_tracker.dice import Dice
 
 
 class Hero(Character):
@@ -51,11 +51,16 @@ class Hero(Character):
             if self.temp_health < 0:
                 self.temp_health = 0
             if self.current_health <= 0:
-                if self.current_health <= -self.max_health:
+                if abs(self.current_health) >= self.max_health:
                     self.status = Status.DEAD
+                    self.current_health = 0
                 else:
                     self.status = Status.UNCONSCIOUS
                     self.current_health = 0
+
+    def add_temp_health(self, temp_health):
+        self.current_health += temp_health
+        self.temp_health += temp_health
 
     # TODO implement this
     def turn(self):

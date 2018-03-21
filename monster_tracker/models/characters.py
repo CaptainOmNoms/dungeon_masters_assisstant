@@ -1,3 +1,4 @@
+import ui
 from sqlalchemy import Column, Integer, Text, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -15,6 +16,7 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     initiative_bonus = Column(Integer)
     initiative = Column(Integer)
     speed = Column(Integer)
+    movement = Column(Integer)
     status = Column(Integer)
     type = Column(Text)
     encounter_id = Column(Integer, ForeignKey('encounter.id'))
@@ -23,7 +25,10 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     __mapper_args__ = {'polymorphic_identity': 'character', 'polymorphic_on': type}
 
     def to_tuple(self):
-        return (self.name, self.current_health, self.armor_class, self.initiative, self.speed)
+        return self.name, '{}/{}'.format(self.current_health,
+                                         self.max_health), self.armor_class, self.initiative, '{}/{}'.format(
+                                             self.movement, self.speed
+                                         )
 
     def alive(self):
         return self.current_health > 0
@@ -41,10 +46,15 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         self.current_health += health
 
     def move(self, feet):
-        if self.moved > 0:
-            self.moved -= feet
+        if self.movement > 0:
+            if feet <= self.movement:
+                self.movement -= feet
+            else:
+                ui.info(ui.red, 'You can not move more than your speed per turn')
+                input()
         else:
-            print('{} has already moved their full movement'.format(self.name))
+            ui.info(ui.red, 'You can not move more than your speed per turn')
+            input()
 
     def act(self):
         pass
@@ -78,7 +88,7 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         self.max_health = max_health
         self.temp_health = temp_health
         self.current_health = current_health or self.max_health
-        self.moved = speed
+        self.movement = speed
 
     def __repr__(self):
         return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(

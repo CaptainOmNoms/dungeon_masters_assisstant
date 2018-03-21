@@ -169,7 +169,7 @@ class Hero(Character):
             if self.temp_health < 0:
                 self.temp_health = 0
             if self.current_health <= 0:
-                if self.current_health == -self.max_health:
+                if self.current_health == (self.max_health * -1):
                     self.status = Status.DEAD
                 else:
                     self.status = Status.UNCONSCIOUS

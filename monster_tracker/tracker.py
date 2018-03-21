@@ -39,9 +39,6 @@ class App(Cmd):
         self.session = s
         # self.enc.init_order = []
 
-    def do_hello(self, arg):
-        print('Hello world')
-
     def do_add_npc(self, _):
         if not self.enc:
             if not ui.ask_yes_no('There is no encounter set. Would you like to set it before proceeding?'):
@@ -77,7 +74,8 @@ class App(Cmd):
         print(
             tabulate.tabulate(
                 map(lambda x: x.to_tuple(), self.enc.characters.values()),
-                headers=['Name', 'Current HP', 'AC', 'Initiative', 'Speed', 'Max HP']
+                headers=['Name', 'HP', 'AC', 'Initiative', 'Movement'],
+                stralign='right'
             )
         )
         print()
@@ -85,12 +83,10 @@ class App(Cmd):
 
     def do_print_init_order(self, _):
         os.system('cls')
-        print(
-            tabulate.tabulate(
-                map(lambda x: x.to_tuple(), self.enc.init_order),
-                headers=['Name', 'Current HP', 'AC', 'Initiative', 'speed']
-            )
-        )
+        print('Initiative Order')
+        print('----------------')
+        for name in self.enc.init_order:
+            print(name)
         print()
         print()
 
@@ -101,31 +97,37 @@ class App(Cmd):
             while not roll:
                 roll = die.check_roll(int(input("Enter initiative roll for {0}: ".format(key))))
             item.initiative = roll + item.initiative_bonus
+        temp = sorted(self.enc.characters.values(), key=attrgetter('initiative', 'initiative_bonus'), reverse=True)
+        for char in temp:
+            self.enc.init_order.append(char.name)
+        ui.info(ui.red, 'Initiative order has been set. To print the initiative order at any time enter i')
 
-        self.enc.init_order = sorted(
-            self.enc.characters.values(), key=attrgetter('initiative', 'initiative_bonus'), reverse=True
-        )
+    def do_heal(self):
+        target = ui.ask_string('Who is being healed')
+        health_up = 0
+        while not health_up:
+            health_up = int(ui.ask_string('How much is being healed'))
+            if health_up > 0:
+                self.enc.characters[target].heal(health_up)
+            else:
+                health_up = 0
+                ui.info(ui.red, 'Must heal for more than 0')
 
-    # TODO rewrite
-    def do_heal(self, creature, health_up):
-        if health_up > 0:
-            self.enc.characters[creature].heal(health_up)
-
-    # TODO rewrite
-    def do_damage(self, creature, health_down):
-        # too many different ways to damage to do dice validation here
-        # TODO: make generic actors
+    # TODO make generic actors
+    def do_damage(self, target, health_down):
         if health_down > 0:
-            self.enc.characters[creature].heal(health_down)
+            self.enc.characters[target].damage(health_down)
+        else:
+            ui.info(ui.red, 'You must do positive damage')
 
     def do_attack(self):
-        target = ui.ask_string('Who are you attacking')
-        roll = ui.ask_string('What did you roll to hit?')
-        if roll >= self.enc.characters(target).ac:
-            damage = int(ui.ask_string('You Hit! How much damage'))
-            self.do_damage(self.enc.characters(target, damage))
-        else:
-            print('Ya missed bitch')
+        target = None
+        damage = 0
+        while target not in self.enc.init_order:
+            target = ui.ask_string('Who are you attacking')
+        while not damage:
+            damage = int(ui.ask_string('How much damage'))
+        self.do_damage(target, damage)
 
     def do_health_adjust(self, creature, health):
         self.enc.characters[creature].adjust_max_health(health)
@@ -142,8 +144,9 @@ class App(Cmd):
                 consume(init_order, next_char)
                 next_char = None
             for creature in init_order:
+                self.do_print_encounter('')
                 # do setup things for each turn here
-                self.current_player = self.enc.characters[creature.name]
+                self.current_player = self.enc.characters[creature]
                 if isinstance(self.current_player, Monster):
                     if self.current_player.status == Status.DEAD:
                         self.enc.total_xp += self.current_player.death()
@@ -159,22 +162,41 @@ class App(Cmd):
                             self.enc.init_order.remove(creature)
                             next_char = self.enc.init_order.index(init_order.peek())
                             break
+                    elif self.current_player.status == Status.DEAD:
+                        self.enc.init_order.remove(creature)
+                        next_char = self.enc.init_order.index(init_order.peek())
+                        break
                     elif self.current_player.status == Status.STABLE:
                         print('{} is stable and must be healed to take turn'.format(self.current_player.name))
                         input()
-                    else:
-                        print('{} take your turn'.format(self.current_player.name))
-                        if self.current_player.player == 'DM':
-                            print('DM do your shit')
-                        else:
-                            task = ui.ask_string('What would you like to do? (Move:m , Attack:a or Quit:q)')
-                            while task != 'q':
-                                if task == 'm':
-                                    num = int(ui.ask_string('How far are you moving'))
-                                    self.current_player.move(num)
-                                elif task == 'a':
-                                    self.do_attack()
-                                task = ui.ask_string('What would you like to do? (Move:m , Attack:a or Quit:q)')
+                    if self.current_player.status == Status.ALIVE:
+                        task = ui.ask_string(
+                            'What would {} like to do? (Move:m , Attack:a, Heal:h or Done:d)'.format(
+                                self.current_player.name
+                            )
+                        )
+                        while task != 'd':
+                            if task == 'm':
+                                num = int(ui.ask_string('How far are you moving'))
+                                self.enc.characters[self.current_player.name].move(num)
+                            elif task == 'a':
+                                self.do_attack()
+                            elif task == 'h':
+                                self.do_heal()
+                            elif task == 'i':
+                                self.do_print_init_order('')
+                                ui.info(ui.red, 'Current Turn: {}'.format(self.current_player.name))
+                            elif task == 'e':
+                                self.do_print_encounter('')
+                            elif task == 'd':
+                                ui.info(ui.red, '{} has ended their turn'.format(self.current_player.name))
+                            else:
+                                ui.info(ui.red, 'Opps thats not an option. Try again')
+                            task = ui.ask_string(
+                                'What would {} like to do? (Move:m , Attack:a or done:d)'.format(
+                                    self.current_player.name
+                                )
+                            )
 
     def do_begin_encounter(self, encounter_name=''):
         self.enc = None
@@ -188,7 +210,9 @@ class App(Cmd):
         if not enc:
             ui.info(ui.red, 'No encounter by that name found')
             return
+        print('Encounter {} begun'.format(encounter_name))
         self.enc = enc
+        self.do_encounter('')
 
     def do_create_encounter(self, arg):
         name = ui.ask_string('Encounter name')
@@ -206,7 +230,6 @@ class App(Cmd):
             'Which YAML file would you like to load? Press <ENTER> to enter your own file path',
             list(name_pairs.keys())
         )
-
         f_path = name_pairs.get(f_name)
 
         while not f_name:
@@ -235,6 +258,7 @@ class App(Cmd):
                 enc.characters[c.name] = c
             s.commit()
         ui.info('Encounter {} loaded'.format(enc.name))
+        self.do_begin_encounter(enc.name)
 
 
 if __name__ == '__main__':
