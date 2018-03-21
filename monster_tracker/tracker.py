@@ -1,14 +1,17 @@
+import os
+import re
 from itertools import cycle, chain
 from operator import attrgetter
 from pathlib import Path
-import re
+
+import tabulate
+import ui
+import yaml
 from cmd2 import Cmd
 from more_itertools import peekable, consume
-import ui
-import tabulate
-import yaml
+
 from monster_tracker.dice import Dice
-from monster_tracker.models import Encounter, Monster, Hero, s, Status
+from monster_tracker.models import Encounter, Character, Monster, Hero, s, Status
 
 
 def add_npc(s, enc, name, health, ac, init_bon, speed):
@@ -18,7 +21,8 @@ def add_npc(s, enc, name, health, ac, init_bon, speed):
     s.commit()
     return npc
 
-def add_pc(s, enc, name, health,ac, init_bon, speed, player):
+
+def add_pc(s, enc, name, health, ac, init_bon, speed, player):
     pc = Hero(name, health, ac, init_bon, speed, player)
     pc.encounter_id = enc.id
     s.add(pc)
@@ -30,8 +34,8 @@ class App(Cmd):
 
     def __init__(self):
         super().__init__()
-        self.enc = None
-        self.current_player = None
+        self.enc = Encounter()
+        self.current_player = Character()
         self.session = s
         # self.enc.init_order = []
 
@@ -68,26 +72,42 @@ class App(Cmd):
             self.enc.characters[pc.name] = pc
 
     def do_print_encounter(self, _):
-        print('\nEncounter {}\n{}\n'.format(self.enc.name, '-' * (10+len(self.enc.name))))
-        print(tabulate.tabulate(
-            map(lambda x: x.to_tuple(), self.enc.characters.values()),
-            headers=['Name', 'Current HP', 'AC', 'Initiative', 'speed', 'Max HP', 'Temp HP']))
+        os.system('cls')
+        print('\nEncounter: {}\n{}\n'.format(self.enc.name, '-' * (10 + len(self.enc.name))))
+        print(
+            tabulate.tabulate(
+                map(lambda x: x.to_tuple(), self.enc.characters.values()),
+                headers=['Name', 'Current HP', 'AC', 'Initiative', 'Speed', 'Max HP']
+            )
+        )
+        print()
+        print()
+
+    def do_print_init_order(self, _):
+        os.system('cls')
+        print(
+            tabulate.tabulate(
+                map(lambda x: x.to_tuple(), self.enc.init_order),
+                headers=['Name', 'Current HP', 'AC', 'Initiative', 'speed']
+            )
+        )
+        print()
+        print()
 
     def do_set_initiatives(self):
         die = Dice(1, 20)
         for key, item in self.enc.characters.items():
             roll = 0
             while not roll:
-                roll = die.check_roll(input("Enter initiative roll for {0}: ".format(key)))
+                roll = die.check_roll(int(input("Enter initiative roll for {0}: ".format(key))))
             item.initiative = roll + item.initiative_bonus
 
         self.enc.init_order = sorted(
-            self.enc.characters, key=attrgetter('initiative_bonus', 'initiative'), reverse=True
+            self.enc.characters.values(), key=attrgetter('initiative', 'initiative_bonus'), reverse=True
         )
 
     # TODO rewrite
     def do_heal(self, creature, health_up):
-        # too many different ways to heal to do dice validation here
         if health_up > 0:
             self.enc.characters[creature].heal(health_up)
 
@@ -98,10 +118,21 @@ class App(Cmd):
         if health_down > 0:
             self.enc.characters[creature].heal(health_down)
 
+    def do_attack(self, target, roll):
+        if roll >= self.enc.characters(target).ac:
+            damage = int(ui.ask_string('You Hit! How much damage'))
+            self.do_damage(self.enc.characters(target, damage))
+        else:
+            print('Sorry you missed')
+
+    def do_health_adjust(self, creature, health):
+        self.enc.characters[creature].adjust_max_health(health)
+
     # TODO needs work on the status checks and such
-    def do_encounter(self):
+    def do_encounter(self, arg):
         self.do_print_encounter('')
         self.do_set_initiatives()
+        self.do_print_init_order('')
         next_char = None
         while True:
             init_order = peekable(cycle(self.enc.init_order))
@@ -110,24 +141,40 @@ class App(Cmd):
                 next_char = None
             for creature in init_order:
                 # do setup things for each turn here
-                self.current_player = self.enc.characters[creature]
-
-                # So what we're saying here is that any creature that drops to 0 health will automatically become
-                # unconscious. Then, when they call Character.dead() they will have their status set to DEAD
-                # This way we can clean up heros and Monsters alike
-                if isinstance(self.current_player, Hero):
+                self.current_player = self.enc.characters[creature.name]
+                if isinstance(self.current_player, Monster):
+                    if self.current_player.status == Status.DEAD:
+                        self.enc.total_xp += self.current_player.death()
+                        self.enc.init_order.remove(creature)
+                        next_char = self.enc.init_order.index(init_order.peek())
+                        break
+                    else:
+                        self.current_player.turn()
+                        input()
+                else:
                     if self.current_player.status == Status.UNCONSCIOUS:
-                        if self.current_player.dead():
+                        if self.current_player.death():
                             self.enc.init_order.remove(creature)
-                            # By breaking here, we exit the for loop
-                            # This will cause a recomputation of the circular list
-                            # We then get the next item in the list
                             next_char = self.enc.init_order.index(init_order.peek())
                             break
-                if self.current_player.status == Status.ALIVE:
-                    self.current_player.do_turn()
-                if isinstance(self.current_player, Monster):
-                    self.enc.total_xp += self.current_player.experience
+                    elif self.current_player.status == Status.STABLE:
+                        print('{} is stable and must be healed to take turn'.format(self.current_player.name))
+                        input()
+                    else:
+                        print('{} take your turn'.format(self.current_player.name))
+                        if self.player == 'DM':
+                            print('DM do your shit')
+                        else:
+                            task = ui.ask_string('What would you like to do? (Move:m , Attack:a or Quit:q)')
+                            while task != 'q':
+                                if task == 'm':
+                                    num = int(ui.ask_string('How far are you moving'))
+                                    self.current_player.move(num)
+                                elif task == 'a':
+                                    target = ui.ask_string('Who are you attacking')
+                                    roll = ui.ask_string('What did you roll to hit?')
+                                    self.do_attack(target, roll)
+                                task = ui.ask_string('What would you like to do? (Move:m , Attack:a or Quit:q)')
 
     def do_begin_encounter(self, encounter_name=''):
         self.enc = None
@@ -157,12 +204,15 @@ class App(Cmd):
         name_pairs = {re.sub('.yaml', '', f.name): f for f in chain(same_dir, data_dir)}
         f_name = ui.ask_choice(
             'Which YAML file would you like to load? Press <ENTER> to enter your own file path',
-            list(name_pairs.keys()))
+            list(name_pairs.keys())
+        )
 
         f_path = name_pairs.get(f_name)
 
         while not f_name:
-            f_name = ui.ask_string('Please enter the full file path to the YAML file you would like to load. Press <ENTER> to stop loading a YAML file.')
+            f_name = ui.ask_string(
+                'Please enter the full file path to the YAML file you would like to load. Press <ENTER> to stop loading a YAML file.'
+            )
             if not f_name:
                 return
             f_path = Path(f_name)

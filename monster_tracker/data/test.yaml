@@ -7,7 +7,7 @@
         temp_health: 0
         current_health: 33
         ac: 13
-        initiative_bonus: 1
+        initiative_bonus: 4
         speed: 30
         player: Rich
    
@@ -16,6 +16,6 @@
         temp_health: 0
         current_health: 63
         ac: 21
-        initiative_bonus: 4
+        initiative_bonus: 5
         speed: 40
         player: Gil
