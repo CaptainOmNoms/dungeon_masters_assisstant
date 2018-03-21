@@ -64,3 +64,13 @@
         initiative_bonus: 4
         speed: 25
         player: Kate
+
+      - name: Melliora
+        max_health: 42
+        temp_health: 0
+        current_health: 42
+        ac: 14
+        initiative_bonus: 1
+        speed: 30
+        player: Imogen
+
