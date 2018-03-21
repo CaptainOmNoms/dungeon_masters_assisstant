@@ -73,7 +73,7 @@ class App(Cmd):
         print('\nEncounter: {}\n{}\n'.format(self.enc.name, '-' * (10 + len(self.enc.name))))
         print(
             tabulate.tabulate(
-                map(lambda x: x.to_tuple(), self.enc.characters.values()),
+                map(lambda c: self.enc.characters[c].to_tuple(), self.enc.init_order),
                 headers=['Name', 'HP', 'AC', 'Initiative', 'Movement'],
                 stralign='right'
             )
@@ -123,6 +123,7 @@ class App(Cmd):
     def do_attack(self):
         target = None
         damage = 0
+        # TODO make a ui.ask_choice?
         while target not in self.enc.init_order:
             target = ui.ask_string('Who are you attacking')
         while not damage:
