@@ -33,7 +33,7 @@ class App(Cmd):
         self.enc = None
         self.current_player = None
         self.session = s
-        self.enc.init_order = []
+        # self.enc.init_order = []
 
     def do_hello(self, arg):
         print('Hello world')
