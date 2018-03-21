@@ -19,3 +19,12 @@
         initiative_bonus: 5
         speed: 40
         player: Gil
+
+      - name: monsta
+        max_health: 100
+        temp_health: 0
+        current_health: 100
+        ac: 10
+        initiative_bonus: 0
+        speed: 0
+        player: DM
