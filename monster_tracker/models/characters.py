@@ -25,10 +25,10 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     __mapper_args__ = {'polymorphic_identity': 'character', 'polymorphic_on': type}
 
     def to_tuple(self):
-        return self.name, '{}/{}'.format(self.current_health,
-                                         self.max_health), self.armor_class, self.initiative, '{}/{}'.format(
-                                             self.movement, self.speed
-                                         )
+        return (
+            self.name, '{}/{}'.format(self.current_health, self.max_health), self.armor_class, self.initiative,
+            '{}/{}'.format(self.movement, self.speed), Status(self.status).name
+        )
 
     def alive(self):
         return self.current_health > 0

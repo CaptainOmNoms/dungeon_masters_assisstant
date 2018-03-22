@@ -69,20 +69,19 @@ class App(Cmd):
             self.enc.characters[pc.name] = pc
 
     def do_print_encounter(self, _):
-        os.system('cls')
+        print('\033[H\033[J')
         print('\nEncounter: {}\n{}\n'.format(self.enc.name, '-' * (10 + len(self.enc.name))))
         print(
             tabulate.tabulate(
                 map(lambda c: self.enc.characters[c].to_tuple(), self.enc.init_order),
-                headers=['Name', 'HP', 'AC', 'Initiative', 'Movement'],
+                headers=['Name', 'HP', 'AC', 'Initiative', 'Movement', 'Status'],
                 stralign='right'
             )
         )
-        print()
-        print()
+        print('\n')
 
     def do_print_init_order(self, _):
-        os.system('cls')
+        print('\033[H\033[J')
         print('Initiative Order')
         print('----------------')
         for name in self.enc.init_order:
