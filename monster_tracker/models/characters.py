@@ -37,9 +37,12 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         raise NotImplementedError('No death for generic character')
 
     def heal(self, healed_damage):
-        self.current_health += healed_damage
-        if self.current_health > self.max_health + self.temp_health:
-            self.current_health = self.max_health + self.temp_health
+        if self.status != Status.DEAD:
+            self.current_health += healed_damage
+            if self.current_health > self.max_health + self.temp_health:
+                self.current_health = self.max_health + self.temp_health
+            if self.status != Status.ALIVE:
+                self.status = Status.ALIVE
 
     def adjust_max_health(self, health):
         self.max_health += health
