@@ -26,8 +26,12 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
 
     def to_tuple(self):
         return (
-            self.name, f'{self.current_health}/{self.max_health}', self.armor_class, self.initiative,
-            f'{self.movement}/{self.speed}', Status(self.status).name
+            self.name,
+            f'{self.current_health}/{self.max_health}',
+            self.armor_class,
+            self.initiative,
+            f'{self.movement}/{self.speed}',
+            Status(self.status).name  # pylint: disable=not-callable
         )
 
     def alive(self):
@@ -71,7 +75,7 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     def death(self):
         raise NotImplementedError('No death for generic character')
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         name=None,
         max_health=None,
@@ -94,4 +98,7 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         self.movement = speed
 
     def __repr__(self):
-        return f'{self.name}, Health: {self.current_health} Initiative: {self.initiative} AC: {self.ac} Speed:{self.speed}'
+        return (
+            f'{self.name}, Health: {self.current_health} Initiative: {self.initiative} ' +
+            f'AC: {self.ac} Speed:{self.speed}'
+        )

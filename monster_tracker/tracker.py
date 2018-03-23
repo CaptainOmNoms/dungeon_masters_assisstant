@@ -1,4 +1,3 @@
-import os
 import re
 from itertools import cycle, chain
 from operator import attrgetter
@@ -15,22 +14,28 @@ from monster_tracker.dice import Dice
 from monster_tracker.models import Encounter, Character, Monster, Hero, s, Status
 
 
-def add_npc(s, enc, name, health, ac, init_bon, speed):
+def add_npc(sess, enc, name, health, ac, init_bon, speed):
     npc = Hero(name, health, ac, init_bon, speed)
-    s.add(npc)
+    sess.add(npc)
     npc.encounter_id = enc.id
-    s.commit()
+    sess.commit()
     return npc
 
 
-def add_pc(s, enc, name, health, ac, init_bon, speed, player):
+def add_pc(sess, enc, name, health, ac, init_bon, speed, player):
     pc = Hero(name, health, ac, init_bon, speed, player)
     pc.encounter_id = enc.id
-    s.add(pc)
-    s.commit()
+    sess.add(pc)
+    sess.commit()
     return pc
 
-def get_input(query_string: str=None, choices: List=None, out_type: type=str, conditions: Tuple[Callable[..., Any], str]=None) -> Any:
+
+def get_input(
+    query_string: str = None,
+    choices: List = None,
+    out_type: type = str,
+    conditions: Tuple[Callable[..., Any], str]=None
+) -> Any:
     """
     Gets user input and coerces it into the type provided.
     Note that query_string can be a format string and will be evaluated before this function is entered
@@ -45,7 +50,7 @@ def get_input(query_string: str=None, choices: List=None, out_type: type=str, co
             ui.error('Nothing entered')
         try:
             typed_data = out_type(user_data)
-            # So ideally what we could do here is make a parser class (maybe just use marshmallow) to parse the data instead?
+# So ideally what we could do here is make a parser class (maybe just use marshmallow) to parse the data instead?
         except (TypeError, ValueError):
             ui.error(f'Unable to coerce string into {out_type}')
             continue
@@ -54,8 +59,6 @@ def get_input(query_string: str=None, choices: List=None, out_type: type=str, co
                 ui.error(conditions[1])
                 continue
         return typed_data
-
-
 
 
 class App(Cmd):
@@ -163,7 +166,7 @@ class App(Cmd):
         self.enc.characters[creature].adjust_max_health(health)
 
     # TODO needs work on the status checks and such
-    def do_encounter(self, arg):
+    def do_encounter(self, _):
         self.do_print_encounter('')
         self.do_set_initiatives()
         next_char = None
@@ -229,14 +232,14 @@ class App(Cmd):
         self.enc = enc
         self.do_encounter('')
 
-    def do_create_encounter(self, arg):
+    def do_create_encounter(self, _):
         name = ui.ask_string('Encounter name')
         enc = Encounter()
         enc.name = name
         s.add(enc)
         s.commit()
 
-    def do_load_from_cfg(self, arg):
+    def do_load_from_cfg(self, _):
         same_dir = Path('.').glob('*.yaml')
         data_dir = Path(__file__).parent.joinpath('data').glob('*.yaml')
 
@@ -249,7 +252,8 @@ class App(Cmd):
 
         while not f_name:
             f_name = ui.ask_string(
-                'Please enter the full file path to the YAML file you would like to load. Press <ENTER> to stop loading a YAML file.'
+                'Please enter the full file path to the YAML file you would like to load. '
+                'Press <ENTER> to stop loading a YAML file.'
             )
             if not f_name:
                 return
