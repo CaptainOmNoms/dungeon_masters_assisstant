@@ -70,7 +70,7 @@ class App(Cmd):
 
     def do_print_encounter(self, _):
         print('\033[H\033[J')
-        print('\nEncounter: {}\n{}\n'.format(self.enc.name, '-' * (10 + len(self.enc.name))))
+        print(f'\nEncounter: {self.enc.name}\n{"-" * (10 + len(self.enc.name))}\n')
         print(
             tabulate.tabulate(
                 map(lambda c: self.enc.characters[c].to_tuple(), self.enc.init_order),
@@ -94,7 +94,7 @@ class App(Cmd):
         for key, item in self.enc.characters.items():
             roll = 0
             while not roll:
-                roll = die.check_roll(int(input("Enter initiative roll for {0}: ".format(key))))
+                roll = die.check_roll(int(input(f"Enter initiative roll for {key}: ")))
             item.initiative = roll + item.initiative_bonus
         temp = sorted(self.enc.characters.values(), key=attrgetter('initiative', 'initiative_bonus'), reverse=True)
         for char in temp:
@@ -164,11 +164,11 @@ class App(Cmd):
                         next_char = self.enc.init_order.index(init_order.peek())
                         break
                     elif self.current_player.status == Status.STABLE:
-                        print('{} is stable and must be healed to take turn'.format(self.current_player.name))
+                        print(f'{self.current_player.name} is stable and must be healed to take turn')
                         input()
                     if self.current_player.status == Status.ALIVE:
                         options = ['Done', 'Attack', 'Heal', 'Move']
-                        task = ui.ask_choice('What would {} like to do?'.format(self.current_player.name), options)
+                        task = ui.ask_choice(f'What would {self.current_player.name} like to do?', options)
                         while task != 'Done':
                             if task == 'Move':
                                 num = int(ui.ask_string('How far are you moving'))
@@ -178,8 +178,8 @@ class App(Cmd):
                             elif task == 'Heal':
                                 self.do_heal()
                             elif task == 'Done':
-                                ui.info(ui.red, '{} has ended their turn'.format(self.current_player.name))
-                            task = ui.ask_choice('What would {} like to do?'.format(self.current_player.name), options)
+                                ui.info(ui.red, f'{self.current_player.name} has ended their turn')
+                            task = ui.ask_choice(f'What would {self.current_player.name} like to do?', options)
 
     def do_begin_encounter(self, encounter_name=''):
         self.enc = None
@@ -193,7 +193,7 @@ class App(Cmd):
         if not enc:
             ui.info(ui.red, 'No encounter by that name found')
             return
-        print('Encounter {} begun'.format(encounter_name))
+        print(f'Encounter {encounter_name} begun')
         self.enc = enc
         self.do_encounter('')
 
@@ -240,7 +240,7 @@ class App(Cmd):
                     c = Monster(**character)
                 enc.characters[c.name] = c
             s.commit()
-        ui.info('Encounter {} loaded'.format(enc.name))
+        ui.info(f'Encounter {enc.name} loaded')
         self.do_begin_encounter(enc.name)
 
 

@@ -26,8 +26,8 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
 
     def to_tuple(self):
         return (
-            self.name, '{}/{}'.format(self.current_health, self.max_health), self.armor_class, self.initiative,
-            '{}/{}'.format(self.movement, self.speed), Status(self.status).name
+            self.name, f'{self.current_health}/{self.max_health}', self.armor_class, self.initiative,
+            f'{self.movement}/{self.speed}', Status(self.status).name
         )
 
     def alive(self):
@@ -94,6 +94,4 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
         self.movement = speed
 
     def __repr__(self):
-        return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
-            self.name, self.current_health, self.initiative, self.ac, self.speed
-        )
+        return f'{self.name}, Health: {self.current_health} Initiative: {self.initiative} AC: {self.ac} Speed:{self.speed}'
