@@ -3,6 +3,7 @@ import re
 from itertools import cycle, chain
 from operator import attrgetter
 from pathlib import Path
+from typing import Any, Callable, List, Tuple
 
 import tabulate
 import ui
@@ -28,6 +29,33 @@ def add_pc(s, enc, name, health, ac, init_bon, speed, player):
     s.add(pc)
     s.commit()
     return pc
+
+def get_input(query_string: str=None, choices: List=None, out_type: type=str, conditions: Tuple[Callable[..., Any], str]=None) -> Any:
+    """
+    Gets user input and coerces it into the type provided.
+    Note that query_string can be a format string and will be evaluated before this function is entered
+    function, when the calling variables are out of scope
+    """
+    while True:
+        if not choices:
+            user_data = ui.ask_string(query_string) if query_string else ui.read_input()
+        else:
+            user_data = ui.ask_choice(query_string or '', choices)
+        if not user_data:
+            ui.error('Nothing entered')
+        try:
+            typed_data = out_type(user_data)
+            # So ideally what we could do here is make a parser class (maybe just use marshmallow) to parse the data instead?
+        except (TypeError, ValueError):
+            ui.error(f'Unable to coerce string into {out_type}')
+            continue
+        if conditions:
+            if not conditions[0](typed_data):
+                ui.error(conditions[1])
+                continue
+        return typed_data
+
+
 
 
 class App(Cmd):
@@ -104,13 +132,17 @@ class App(Cmd):
 
     def do_heal(self):
         target = ui.ask_choice('Who is being healed?', self.enc.init_order)
-        health_up = 0
+        health_up = None
         while not health_up:
-            health_up = int(ui.ask_string('How much is being healed'))
+            health_up = ui.ask_string('How much is being healed')
+            if not health_up or not re.fullmatch(r'\d+', health_up):
+                ui.error('Invalid input')
+                break
+            health_up = int(health_up)
             if health_up > 0:
                 self.enc.characters[target].heal(health_up)
             else:
-                health_up = 0
+                health_up = None
                 ui.info(ui.red, 'You can\'t heal 0')
 
     # TODO make generic actors
