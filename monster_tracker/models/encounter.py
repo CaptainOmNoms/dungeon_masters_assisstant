@@ -15,11 +15,7 @@ class Encounter(Base):
     )
 
     def __repr__(self):
-        return '\n'.join(list(map(lambda c: repr(c), self.characters.values())))
-        ret = []
-        for val in self.characters.values():
-            ret += '{}\n'.format(repr(val))
-        return ret
+        return '\n'.join(list(map(repr, self.characters.values())))
 
     def __init__(self, name=None):
         self.total_xp = 0
