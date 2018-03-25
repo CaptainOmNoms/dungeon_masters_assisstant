@@ -77,17 +77,17 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        name=None,
-        max_health=None,
-        ac=None,
-        initiative_bonus=0,
-        initiative=0,
-        speed=None,
-        temp_health=0,
-        current_health=None
+        name: str =None,
+        max_health: int =None,
+        armor_class: int =None,
+        initiative_bonus: int =0,
+        initiative: int =0,
+        speed: int =None,
+        temp_health: int =0,
+        current_health: int =None
     ):
         self.name = name
-        self.armor_class = ac
+        self.armor_class = armor_class
         self.initiative_bonus = initiative_bonus
         self.initiative = initiative
         self.speed = speed
@@ -100,5 +100,5 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     def __repr__(self):
         return (
             f'{self.name}, Health: {self.current_health} Initiative: {self.initiative} ' +
-            f'AC: {self.ac} Speed:{self.speed}'
+            f'AC: {self.armor_class} Speed:{self.speed}'
         )
