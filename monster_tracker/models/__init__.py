@@ -1,3 +1,4 @@
+# pylint: disable=wrong-import-position
 from enum import IntEnum
 
 from sqlalchemy import create_engine
@@ -13,7 +14,6 @@ def create_session(uri):
     engine = create_engine(uri)
     Base.metadata.create_all(engine)
     return sessionmaker(bind=engine)
-
 
 from .characters import Character
 from .monster import Monster

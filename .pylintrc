@@ -12,7 +12,7 @@ profile=no
 
 # Add <file or directory> to the black list. It should be a base name, not a
 # path. You may set this option multiple times.
-ignore=CVS
+ignore=CVS,.git
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -32,7 +32,7 @@ load-plugins=
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifier separated by comma (,) or put this option
 # multiple time.
-disable=missing-docstring
+disable=missing-docstring,bad-continuation
 
 
 [REPORTS]
@@ -107,14 +107,14 @@ attr-rgx=[a-z_][a-z0-9_]{1,30}$
 argument-rgx=[a-z_][a-z0-9_]{1,30}$
 
 # Regular expression which should only match correct variable names
-variable-rgx=[a-z_][a-z0-9_]{1,30}$
+variable-rgx=[a-z_][a-z0-9_]{0,30}$
 
 # Regular expression which should only match correct list comprehension /
 # generator expression variable names
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,j,k,ex,Run,_
+good-names=i,j,k,x,y,ex,Run,_
 
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
@@ -146,7 +146,7 @@ indent-string='    '
 [SIMILARITIES]
 
 # Minimum lines number of a similarity.
-min-similarity-lines=4
+min-similarity-lines=6
 
 # Ignore comments when computing similarities.
 ignore-comments=yes
@@ -177,7 +177,7 @@ generated-members=REQUEST,acl_users,aq_parent
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=6
+max-args=8
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore
@@ -200,9 +200,6 @@ max-parents=7
 
 # Maximum number of attributes for a class (see R0902).
 max-attributes=7
-
-# Minimum number of public methods for a class (see R0903).
-min-public-methods=2
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=20
