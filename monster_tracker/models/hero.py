@@ -7,7 +7,7 @@ from monster_tracker.models.characters import Character
 
 
 class Hero(Character):
-    player = Column(Text)
+    player = Column(Text, default='DM')
 
     __mapper_args__ = {'polymorphic_identity': 'hero'}
 
@@ -76,29 +76,9 @@ class Hero(Character):
     def turn(self):
         pass
 
-    def __init__(
-        self,
-        name=None,
-        max_health=None,
-        ac=None,
-        initiative_bonus=0,
-        speed=0,
-        player='DM',
-        current_health=0,
-        temp_health=0
-    ):
-        super().__init__(
-            name=name,
-            ac=ac,
-            initiative_bonus=initiative_bonus,
-            initiative=0,
-            speed=speed,
-            current_health=current_health,
-            temp_health=temp_health,
-            max_health=max_health
-        )
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.death_saves = {'failed': 0, 'saved': 0}
-        self.player = player
 
     @reconstructor
     def reconstruct(self):
