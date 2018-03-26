@@ -1,5 +1,5 @@
 from apistar.test import TestClient
-from app import app, welcome
+from monster_tracker.app import app, welcome
 
 
 def test_welcome():

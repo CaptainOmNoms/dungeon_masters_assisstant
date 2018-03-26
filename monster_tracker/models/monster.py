@@ -5,7 +5,7 @@ from monster_tracker.models.characters import Character
 
 
 class Monster(Character):
-    experience = Column(Integer)
+    experience = Column(Integer, default=0)
 
     __mapper_args__ = {'polymorphic_identity': 'monster'}
 
@@ -24,3 +24,4 @@ class Monster(Character):
     def turn(self):
         print('DM do your shit')
         #TODO print available actions, bonus actions, and speed
+
