@@ -85,6 +85,5 @@ class Hero(Character):
         self.death_saves = {'failed': 0, 'saved': 0}
 
     def __repr__(self):
-        return '{}, Health: {} Initiative: {} AC: {} Speed: {}'.format(
-            self.name, self.current_health, self.initiative, self.armor_class, self.speed
-        )
+        return (f'{self.name}, Health: {self.current_health} Initiative: {self.initiative} AC: {self.armor_class}' +
+                'Speed: {self.speed}')

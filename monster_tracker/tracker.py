@@ -16,7 +16,7 @@ from monster_tracker.models import Encounter, Character, Monster, Hero, s, Statu
 
 
 def add_npc(sess, enc: Encounter, name: str, health: int, ac: int, init_bon: int, speed: str) -> Hero:
-    npc = Hero(name, health, ac, init_bon, speed)
+    npc = Hero(name=name, max_health=health, armor_class=ac, initiative_bonus=init_bon, speed=speed)
     sess.add(npc)
     npc.encounter_id = enc.id
     sess.commit()
@@ -24,7 +24,7 @@ def add_npc(sess, enc: Encounter, name: str, health: int, ac: int, init_bon: int
 
 
 def add_pc(sess, enc: Encounter, name: str, health: int, ac: int, init_bon: int, speed: int, player: str) -> Hero:
-    pc = Hero(name, health, ac, init_bon, speed, player)
+    pc = Hero(name=name, max_health=health, armor_class=ac, initiative_bonus=init_bon, speed=speed, player=player)
     pc.encounter_id = enc.id
     sess.add(pc)
     sess.commit()
@@ -153,7 +153,6 @@ class App(Cmd):
             ui.info(ui.red, 'You must do positive damage')
 
     def do_attack(self, _) -> None:
-        damage = 0
         try:
             target = get_input('Who are you attacking?', choices=self.enc.init_order)
             damage = get_input(
