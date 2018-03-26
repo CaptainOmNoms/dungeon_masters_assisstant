@@ -9,15 +9,15 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     __tablename__ = 'character'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(Text)
-    max_health = Column(Integer)
-    temp_health = Column(Integer)
-    current_health = Column(Integer)
-    armor_class = Column(Integer)
-    initiative_bonus = Column(Integer)
-    initiative = Column(Integer)
-    speed = Column(Integer)
-    movement = Column(Integer)
-    status = Column(Integer)
+    max_health = Column(Integer, default=0)
+    temp_health = Column(Integer, default=0)
+    current_health = Column(Integer, default=0)
+    armor_class = Column(Integer, default=0)
+    initiative_bonus = Column(Integer, default=0)
+    initiative = Column(Integer, default=0)
+    speed = Column(Integer, default=0)
+    movement = Column(Integer, default=0)
+    status = Column(Integer, default=Status.ALIVE)
     type = Column(Text)
     encounter_id = Column(Integer, ForeignKey('encounter.id'))
     encounter = relationship('Encounter', back_populates='characters')
@@ -75,30 +75,18 @@ class Character(Base):  # pylint: disable=too-many-instance-attributes
     def death(self):
         raise NotImplementedError('No death for generic character')
 
-    def __init__(  # pylint: disable=too-many-arguments
-        self,
-        name=None,
-        max_health=None,
-        ac=None,
-        initiative_bonus=0,
-        initiative=0,
-        speed=None,
-        temp_health=0,
-        current_health=None
-    ):
-        self.name = name
-        self.armor_class = ac
-        self.initiative_bonus = initiative_bonus
-        self.initiative = initiative
-        self.speed = speed
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            if hasattr(self, k):
+                setattr(self, k, v)
+            else:
+                print(f'Got extra attr {k}')
         self.status = Status.ALIVE
-        self.max_health = max_health
-        self.temp_health = temp_health
-        self.current_health = current_health or self.max_health
-        self.movement = speed
+        self.current_health = self.current_health or self.max_health
+        self.movement = self.speed
 
     def __repr__(self):
         return (
             f'{self.name}, Health: {self.current_health} Initiative: {self.initiative} ' +
-            f'AC: {self.ac} Speed:{self.speed}'
+            f'AC: {self.armor_class} Speed:{self.speed}'
         )
