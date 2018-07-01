@@ -1,4 +1,3 @@
-import os
 import re
 from itertools import cycle, chain
 from operator import attrgetter
@@ -80,15 +79,6 @@ class App(Cmd):
         )
         print('\n')
 
-    def do_print_init_order(self, _):
-        print('\033[H\033[J')
-        print('Initiative Order')
-        print('----------------')
-        for name in self.enc.init_order:
-            print(name)
-        print()
-        print()
-
     def do_set_initiatives(self):
         die = Dice(1, 20)
         for key, item in self.enc.characters.items():
@@ -167,9 +157,10 @@ class App(Cmd):
                         print('{} is stable and must be healed to take turn'.format(self.current_player.name))
                         input()
                     if self.current_player.status == Status.ALIVE:
-                        options = ['Done', 'Attack', 'Heal', 'Move']
+                        options = ['Attack', 'Heal', 'Move', 'Quit']
                         task = ui.ask_choice('What would {} like to do?'.format(self.current_player.name), options)
-                        while task != 'Done':
+                        while task != 'Quit':
+                            self.do_print_encounter('')
                             if task == 'Move':
                                 num = int(ui.ask_string('How far are you moving'))
                                 self.enc.characters[self.current_player.name].move(num)
@@ -177,7 +168,7 @@ class App(Cmd):
                                 self.do_attack()
                             elif task == 'Heal':
                                 self.do_heal()
-                            elif task == 'Done':
+                            elif task == 'Quit':
                                 ui.info(ui.red, '{} has ended their turn'.format(self.current_player.name))
                             task = ui.ask_choice('What would {} like to do?'.format(self.current_player.name), options)
 
